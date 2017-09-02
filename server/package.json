@@ -5,8 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "node_modules/.bin/nodemon -L --exec babel-node server.js",
-    "prod": "pm2 start --interpreter babel-node server.js",
-    "restart": "pm2 restart --interpreter babel-node server",
+    "prod": "node_modules/.bin/pm2 start --interpreter babel-node server.js",
+    "restart": "node_modules/.bin/pm2 restart --interpreter babel-node server",
+    "stop": "node_modules/.bin/pm2 stop --interpreter babel-node server",
     "migrate": "babel-node ./node_modules/.bin/mm migrate --config=config/mongodb.js"
   },
   "keywords": [
@@ -19,7 +20,8 @@
     "cookie-parser": "^1.4.3",
     "express": "^4.15.4",
     "express-es6-template-engine": "^2.0.1",
-    "mongoose": "^4.11.9"
+    "mongoose": "^4.11.9",
+    "pm2": "^2.6.1"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
