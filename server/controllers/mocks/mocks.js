@@ -48,11 +48,11 @@ export const create = async (req, res, next) => {
 
 export const remove = async (req, res, next) => {
 
-  console.log('delete mock:', req.body);
+  console.log('delete mock:', req.params);
 
   let mock;
 
-  if(!req.body.id) {
+  if(!req.params.id) {
     return next({
       status: 400,
       message: 'Provide id'
@@ -61,7 +61,7 @@ export const remove = async (req, res, next) => {
 
   try {
 
-    mock = await Mock.remove({_id: req.body.id});
+    mock = await Mock.remove({_id: req.params.id});
 
   } catch ({message}) {
 

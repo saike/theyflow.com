@@ -10,6 +10,6 @@ router.get('/mocks', MocksController.list);
 
 router.post('/mocks', MocksController.create);
 
-router.delete('/mocks', MocksController.remove);
+router.delete('/mocks/:id', MocksController.remove);
 
 export default router;
