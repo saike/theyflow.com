@@ -72,7 +72,10 @@ export const remove = async (req, res, next) => {
 
   }
 
-  res.json(mock);
+  res.json({
+    status: 200,
+    mock: mock
+  });
 
 };
 

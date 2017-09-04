@@ -7,12 +7,16 @@ import CONFIG from './config';
 import body_parser from 'body-parser';
 import cookie_parser from 'cookie-parser';
 import Render from 'express-es6-template-engine';
+import session from 'express-session';
+import connect_mongo from 'connect-mongo';
+const MongoStore = connect_mongo(session);
 
 //database
 import mongoose from 'mongoose';
 
 //routes
 import MocksRoutes from './routes/mocks';
+import AuthRoutes from './routes/auth';
 
 const app = express();
 
@@ -36,9 +40,19 @@ app.use(express.static('../client'));
 //request parsers
 app.use(body_parser.json());
 app.use(body_parser.urlencoded({extended: true}));
+
 app.use(cookie_parser()); // read cookies (needed for auth)
 
+//authorization middlewares
+app.use(session({
+  resave: true,
+  saveUninitialized: true,
+  secret: CONFIG.SECRET,
+  store: new MongoStore({ mongooseConnection: mongoose.connection })
+}));
+
 app.use('/', MocksRoutes);
+app.use('/auth', AuthRoutes);
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')
