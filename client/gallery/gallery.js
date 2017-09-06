@@ -73,6 +73,10 @@
         this.mocks.splice(this.mocks.indexOf(mock), 1);
       };
 
+      this.validate_url = function(url) {
+        return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(url);
+      };
+
       this.wizard = {
         show: false,
         current: false,
@@ -81,6 +85,10 @@
           this.wizard.current = new Mock();
         },
         create: () => {
+          if(!this.validate_url(this.wizard.current.url)) {
+            alert('BAD URL!');
+            return;
+          }
           this.wizard.current.save().then((res) => {
             this.mocks.push(this.wizard.current);
             this.wizard.cancel();
@@ -100,7 +108,7 @@
     bindings: { mock: '<', on_delete: '<onDelete', edit: '<' },
     template: `
     
-      <div class="mock_container">
+      <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
         <div class="mock_overlay" data-ng-if="$ctrl.edit">
           <div class="mock_edit_tools">
