@@ -56,11 +56,6 @@ export const edit = async (req, res, next) => {
 
     mock = await Mock.findOneAndUpdate({ _id: req.params.id }, req.body, {upsert:true});
 
-    if(mock) {
-      Object.assign(mock, req.body);
-      await mock.save();
-    }
-
   } catch ({message}) {
 
     return next({
