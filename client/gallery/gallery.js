@@ -293,7 +293,7 @@
           overlay.addEventListener('mousedown', (e) => {
             e.preventDefault();
 
-            if(!this.dragging) {
+            if(!this.dragging && e.which === 1) {
               this.dragging = true;
               this.on_drag && this.on_drag(this.mock, 'start', e);
               $scope.$apply();
@@ -305,7 +305,7 @@
           overlay.addEventListener('mousemove', (e) => {
             e.preventDefault();
 
-            if(this.dragging) {
+            if(this.dragging && e.which === 1) {
               $element[0].style.zIndex = 1000;
               this.on_drag && this.on_drag(this.mock, 'move', e);
               console.dir(e);
