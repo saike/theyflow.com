@@ -288,7 +288,7 @@
 
           let overlay = $element[0].querySelector('.mock_overlay');
 
-          console.dir(overlay);
+          // console.dir(overlay);
 
           overlay.addEventListener('mousedown', (e) => {
             e.preventDefault();
