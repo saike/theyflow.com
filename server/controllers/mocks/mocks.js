@@ -49,12 +49,15 @@ export const create = async (req, res, next) => {
 export const edit = async (req, res, next) => {
 
   console.log('edit mock:', req.params);
+  console.log('edit mock:', req.body);
 
   let mock;
 
   try {
 
-    mock = await Mock.findOneAndUpdate({ _id: req.params.id }, req.body, {upsert:true, returnNewDocument: true});
+    mock = await Mock.findOneAndUpdate({ _id: req.params.id }, req.body, {upsert:true, new: true});
+
+    console.log(mock.x, mock.y);
 
   } catch ({message}) {
 

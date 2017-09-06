@@ -232,8 +232,8 @@
         if(type === 'move'){
           let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
           let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-          mock.x = parseInt(parseFloat(mock.x) + directionX/this.MockCanvas.camera.zoom);
-          mock.y = parseInt(parseFloat(mock.y) + directionY/this.MockCanvas.camera.zoom);
+          mock.x = parseInt(parseFloat(mock.x) + directionX/this.MockCanvas.camera.zoom).toString();
+          mock.y = parseInt(parseFloat(mock.y) + directionY/this.MockCanvas.camera.zoom).toString();
         }
         if(type === 'end'){
           mock.save();
