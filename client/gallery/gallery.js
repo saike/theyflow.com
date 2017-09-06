@@ -45,7 +45,7 @@
           </form>
         </div>
         <div class="mock_canvas">
-          <mock data-ng-repeat="mock in $ctrl.mocks" data-mock="mock" data-on-delete="$ctrl.remove_mock"></mock>
+          <mock data-ng-repeat="mock in $ctrl.mocks" data-edit="$ctrl.auth.authorized" data-mock="mock" data-on-delete="$ctrl.remove_mock"></mock>
           <div data-ng-if="$ctrl.mocks.length < 1">
             <h3>No mocks found...</h3>
           </div>
@@ -97,12 +97,16 @@
 
   gallery.component('mock', {
 
-    bindings: { mock: '<', on_delete: '<onDelete' },
+    bindings: { mock: '<', on_delete: '<onDelete', edit: '<' },
     template: `
     
-      <div>
+      <div class="mock_container">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
-        <span data-ng-show="!$ctrl.mock.url">NO IMAGE URL <button type="button" data-ng-click="$ctrl.remove_mock()">DELETE</button> </span>
+        <div class="mock_overlay" data-ng-if="$ctrl.edit">
+          <div class="mock_edit_tools">
+            <button class="delete_btn" type="button" data-ng-click="$ctrl.remove_mock()">DELETE</button>                 
+          </div>
+        </div>
       </div>
     
     `,
