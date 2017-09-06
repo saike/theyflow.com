@@ -46,8 +46,9 @@ login {
 mock {
 
   display: inline-block;
-  width: 20%;
+  width: 16.666vw;
   vertical-align: top;
+  position: absolute;
 
   img {
     vertical-align: top;
@@ -104,11 +105,17 @@ mock {
       opacity: 1;
     }
   }
+
+  .mock_coord {
+    color: #fff;
+    padding: 10px;
+  }
 }
 
 gallery {
 
   display: block;
+  font-family: Verdana, Geneva, sans-serif;
 
   .nav_bar {
 
@@ -212,5 +219,15 @@ gallery {
   .mock_canvas {
     //font-size: 0;
   }
+
+}
+
+mock-canvas {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
 
 }

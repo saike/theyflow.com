@@ -12,6 +12,8 @@ router.get('/mocks', MocksController.list);
 
 router.post('/mocks', AuthResolver, MocksController.create);
 
+router.post('/mocks/:id', AuthResolver, MocksController.edit);
+
 router.delete('/mocks/:id', AuthResolver, MocksController.remove);
 
 export default router;

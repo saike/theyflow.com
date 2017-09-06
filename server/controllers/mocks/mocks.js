@@ -46,6 +46,34 @@ export const create = async (req, res, next) => {
 
 };
 
+export const edit = async (req, res, next) => {
+
+  console.log('edit mock:', req.body);
+
+  let mock;
+
+  try {
+
+    mock = await Mock.findOneAndUpdate({ _id: req.params.id }, req.body, {upsert:true});
+
+    if(mock) {
+      Object.assign(mock, req.body);
+      await mock.save();
+    }
+
+  } catch ({message}) {
+
+    return next({
+      status: 400,
+      message
+    });
+
+  }
+
+  res.json(mock);
+
+};
+
 export const remove = async (req, res, next) => {
 
   console.log('delete mock:', req.params);
