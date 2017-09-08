@@ -143,8 +143,17 @@
         },
         create: () => {
           if(!this.validate_url(this.wizard.current.url)) {
-            alert('BAD URL!');
-            return;
+
+            let result = this.wizard.current.url.split('[img]')[1];
+            result = result.split('[/img]')[0];
+            if(result) {
+              this.wizard.current.url = result;
+            }
+            else {
+              return;
+            }
+            console.dir(this.wizard.current.url);
+            // alert('BAD URL!');
           }
           this.wizard.current.save().then((res) => {
             this.MockCanvas.mocks.push(this.wizard.current);
