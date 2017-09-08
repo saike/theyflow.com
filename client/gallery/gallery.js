@@ -175,7 +175,7 @@
     template:
       `
         <mock data-ng-repeat="mock in $ctrl.MockCanvas.mocks" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
-        <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1">
+        <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
           <h3>No mocks found...</h3>
         </div>
       `,
@@ -248,7 +248,7 @@
           mock.save();
           console.log('save mock');
         }
-        console.log(type, mock);
+        // console.log(type, mock);
 
       };
 
@@ -262,7 +262,7 @@
     template: `
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
-        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
+        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
         <div class="mock_overlay" data-ng-if="$ctrl.edit">
           <div class="mock_edit_tools">
             <button class="delete_btn" type="button" data-ng-click="$ctrl.remove_mock()">Delete</button>                 
@@ -270,11 +270,17 @@
           <div class="mock_coord top left">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
         </div>
       </div>
+      
+      <div class="mock_preview" data-ng-if="$ctrl.preview" data-overlay-click="$ctrl.preview = false;">
+        <img data-ng-src="{{ $ctrl.mock.url }}" alt="">
+      </div>
     
     `,
     controller($element, $timeout, $scope){
 
       this.dragging = false;
+
+      this.preview = false;
 
       //start drag
 
@@ -298,6 +304,7 @@
           let overlay = $element[0].querySelector('.mock_overlay');
 
           // console.dir(overlay);
+          if(!overlay) return;
 
           overlay.addEventListener('mousedown', (e) => {
             e.preventDefault();
@@ -317,7 +324,7 @@
             if(this.dragging && e.which === 1) {
               $element[0].style.zIndex = 1000;
               this.on_drag && this.on_drag(this.mock, 'move', e);
-              console.dir(e);
+              // console.dir(e);
               $scope.$apply();
             }
 
@@ -522,6 +529,23 @@
         })
       };
 
+    }
+  });
+
+  gallery.directive('overlayClick', () => {
+    return {
+      restrict: 'A',
+      link: function (scope, elm, attrs) {
+
+        elm.bind('click', (e) => {
+          if(e.target === elm[0]) {
+            scope.$apply(() => {
+              scope.$eval(attrs.overlayClick);
+            })
+          }
+        })
+
+      }
     }
   });
 
