@@ -6,7 +6,7 @@
 
     $stateProvider.state({
       name: 'gallery',
-      url: '/',
+      url: '/?x&y&zoom',
       component: 'gallery'
     });
 
@@ -108,8 +108,8 @@
         </div>  
       </div>
     `,
-    controller: function (Mock, AuthAPI, MockCanvas, $window) {
-
+    controller: function (Mock, AuthAPI, MockCanvas, $window, $stateParams) {
+      
       this.mocks = [];
 
       this.auth = AuthAPI;
@@ -118,7 +118,10 @@
 
       this.$onInit = () => {
 
-        this.MockCanvas.camera.zoom = $window.innerWidth/6/1000;
+        this.MockCanvas.camera.zoom = parseFloat($stateParams.zoom) || $window.innerWidth/6/1000;
+
+        this.MockCanvas.camera.x = parseFloat($stateParams.x) || 0;
+        this.MockCanvas.camera.y = parseFloat($stateParams.y) || 0;
 
         Mock.list().then((mocks) => {
 
@@ -494,42 +497,6 @@
           return res.data.map(mock => new Mock(mock));
         });
       }
-
-    }
-  });
-
-  gallery.component('mockWizard', {
-
-    template: `
-    
-      <div style="text-align: center;">
-        <form style="display: inline-block; margin-top: 100px; text-align: left;" novalidate data-ng-submit="$ctrl.create_mock()">
-          <span style="margin: 30px 0; color: green;" data-ng-show="$ctrl.success">MOCK CREATED SUCCESSFUL!</span> <br>
-          <label style="margin-top: 10px; font-size: 20px; padding: 10px;" for="">URL</label> <br>
-          <input style="margin-top: 10px; font-size: 20px; padding: 10px; width: 500px;" type="text" data-ng-model="$ctrl.mock.url"> <br>
-          <label style="margin-top: 10px; font-size: 20px; padding: 10px;" for="">X</label> <br>
-          <input style="margin-top: 10px; font-size: 20px; padding: 10px; width: 500px;" type="text" data-ng-model="$ctrl.mock.x"> <br>
-          <label style="margin-top: 10px; font-size: 20px; padding: 10px;" for="">Y</label> <br>
-          <input style="margin-top: 10px; font-size: 20px; padding: 10px; width: 500px;" type="text" data-ng-model="$ctrl.mock.y"> <br>
-          <button style="margin-top: 30px; font-size: 20px; padding: 10px; width: 523px;" type="submit">CREATE!</button>
-        </form>
-      </div>
-    
-    `,
-    controller(Mock){
-
-      this.mock = new Mock();
-
-      this.success = false;
-
-      this.create_mock = () => {
-        this.success = false;
-        this.mock.save().then((mock) => {
-          this.success = true;
-          console.dir(mock);
-          this.mock = new Mock();
-        })
-      };
 
     }
   });
