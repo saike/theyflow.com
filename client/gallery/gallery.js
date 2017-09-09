@@ -2,11 +2,11 @@
 
   let gallery = angular.module('gallery', [ 'ui.router' ]);
 
-  gallery.config(function ($stateProvider) {
+  gallery.config(function ($stateProvider, $urlRouterProvider) {
 
     $stateProvider.state({
       name: 'gallery',
-      url: '',
+      url: '/',
       component: 'gallery'
     });
 
@@ -24,6 +24,8 @@
       url: '/login',
       component: 'login'
     });
+
+    $urlRouterProvider.otherwise('/');
 
   });
 
