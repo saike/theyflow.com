@@ -6,14 +6,12 @@ import * as MocksController from '../controllers/mocks/mocks';
 
 const router = express.Router();
 
-router.get('/', MocksController.index);
+router.get('/', MocksController.list);
 
-router.get('/mocks', MocksController.list);
+router.post('/', AuthResolver, MocksController.create);
 
-router.post('/mocks', AuthResolver, MocksController.create);
+router.post('/:id', AuthResolver, MocksController.edit);
 
-router.post('/mocks/:id', AuthResolver, MocksController.edit);
-
-router.delete('/mocks/:id', AuthResolver, MocksController.remove);
+router.delete('/:id', AuthResolver, MocksController.remove);
 
 export default router;

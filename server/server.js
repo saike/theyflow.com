@@ -18,6 +18,8 @@ import mongoose from 'mongoose';
 import MocksRoutes from './routes/mocks';
 import AuthRoutes from './routes/auth';
 
+//home controller
+
 const app = express();
 
 //connect to database
@@ -51,8 +53,13 @@ app.use(session({
   store: new MongoStore({ mongooseConnection: mongoose.connection })
 }));
 
-app.use('/', MocksRoutes);
+app.use('/mocks', MocksRoutes);
 app.use('/auth', AuthRoutes);
+
+app.all('/*', (req, res, next) => {
+  res.render('index', {});
+});
+
 
 app.listen(3000, function () {
   console.log('Example app listening on port 3000!')

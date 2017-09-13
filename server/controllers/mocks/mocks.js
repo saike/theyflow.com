@@ -104,9 +104,3 @@ export const remove = async (req, res, next) => {
   });
 
 };
-
-export const index = async (req, res, next) => {
-
-  res.render('index', {});
-
-};

@@ -2,7 +2,7 @@
 
   let gallery = angular.module('gallery', [ 'ui.router' ]);
 
-  gallery.config(function ($stateProvider, $urlRouterProvider) {
+  gallery.config(function ($stateProvider, $urlRouterProvider, $locationProvider) {
 
     $stateProvider.state({
       name: 'gallery',
@@ -27,69 +27,15 @@
 
     $urlRouterProvider.otherwise('/');
 
-  });
+    $locationProvider.html5Mode(true);
 
-  gallery.service('MockCanvas', function () {
-    return class MockCanvas {
-
-      constructor(){
-
-        this.mocks = [];
-
-        this.camera = {
-          zoom: 1,
-          x: 0,
-          y: 0,
-          width: 1440,
-          height: 900,
-          move: false
-        };
-
-      }
-      reflow(elm) {
-
-        let elm_width =  elm.offsetWidth || elm.innerWidth || 0;
-        let elm_height = elm.offsetHeight || elm.innerHeight || 0;
-
-        this.camera.width = elm_width/this.camera.zoom;
-        this.camera.height = elm_height/this.camera.zoom;
-
-        console.dir(this.camera);
-        console.dir(elm);
-
-      }
-      viewport(){
-        return {
-          left: this.camera.x - (this.camera.width/2),
-          top: this.camera.y - (this.camera.height/2),
-          right: this.camera.x + (this.camera.width/2),
-          bottom: this.camera.y + (this.camera.height/2)
-        };
-      }
-      mock_position(mock){
-
-        let viewport = this.viewport();
-
-        return {
-          top: (mock.y - viewport.top)*this.camera.zoom + 'px',
-          left: (mock.x - viewport.left)*this.camera.zoom + 'px',
-          width: (this.camera.zoom*1000) + 'px'
-        }
-
-      }
-      render(){
-
-
-
-      }
-
-    }
   });
 
   gallery.component('gallery', {
     template: `
       <div>
         <div class="nav_bar" data-ng-if="$ctrl.auth.authorized">
+          <button type="button" class="nav_bar_btn delete" data-ng-class="{ active: $ctrl.delete.enabled }" data-ng-click="$ctrl.delete.enabled = !$ctrl.delete.enabled;">Delete</button>
           <button type="button" class="nav_bar_btn create" data-ng-click="$ctrl.wizard.open()">Create</button>
         </div>
         <div class="create_modal" data-ng-show="$ctrl.wizard.show">
@@ -104,13 +50,11 @@
           </form>
         </div>
         <div class="mock_canvas">
-          <mock-canvas data-mock-canvas="$ctrl.MockCanvas" data-edit="$ctrl.auth.authorized"></mock-canvas>
+          <mock-canvas data-mock-canvas="$ctrl.MockCanvas" data-delete="$ctrl.delete.enabled" data-edit="$ctrl.auth.authorized"></mock-canvas>
         </div>  
       </div>
     `,
-    controller: function (Mock, AuthAPI, MockCanvas, $window, $stateParams) {
-      
-      this.mocks = [];
+    controller: function (Mock, AuthAPI, MockCanvas, $window, $stateParams, $timeout) {
 
       this.auth = AuthAPI;
 
@@ -171,31 +115,111 @@
         }
       };
 
+      this.delete = {
+        enabled: false
+      };
+
+    }
+  });
+
+  gallery.service('MockCanvas', function () {
+    return class MockCanvas {
+
+      constructor(){
+
+        this.mocks = [];
+
+        this.camera = {
+          zoom: 1,
+          x: 0,
+          y: 0,
+          width: 1440,
+          height: 900,
+          move: false
+        };
+
+        this.element = false;
+
+      }
+      reflow(elm) {
+
+        elm = elm || this.element;
+
+        let elm_width =  elm.offsetWidth || elm.innerWidth || 0;
+        let elm_height = elm.offsetHeight || elm.innerHeight || 0;
+
+        this.camera.width = elm_width/this.camera.zoom;
+        this.camera.height = elm_height/this.camera.zoom;
+
+        // console.log(this.camera.x, this.camera.y, this.camera.width, this.camera.height, this.camera.zoom);
+        // console.dir(elm);
+
+      }
+      viewport(){
+
+        return {
+          left: this.camera.x - (this.camera.width/2),
+          top: this.camera.y - (this.camera.height/2),
+          right: this.camera.x + (this.camera.width/2),
+          bottom: this.camera.y + (this.camera.height/2)
+        };
+
+      }
+      mock_position(mock){
+
+        let viewport = this.viewport();
+
+        return {
+          top: (mock.y - viewport.top)*this.camera.zoom + 'px',
+          left: (mock.x - viewport.left)*this.camera.zoom + 'px',
+          width: (this.camera.zoom*1000) + 'px'
+        }
+
+      }
+      render(){
+
+
+
+      }
+      set_viewport(elm){
+
+        if(elm) {
+          this.element = elm;
+        }
+
+      }
+
     }
   });
 
   gallery.component('mockCanvas', {
 
-    bindings: { MockCanvas: '<mockCanvas', edit: '<' },
+    bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
       `
-        <mock data-ng-repeat="mock in $ctrl.MockCanvas.mocks" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
+        <mock data-ng-repeat="mock in $ctrl.MockCanvas.mocks" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
         <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
           <h3>No mocks found...</h3>
         </div>
       `,
     controller($element, $window, $scope){
 
-      this.$onChanges = () => {
-        console.dir(this.MockCanvas);
+      this.$onChanges = (changes) => {
+
+        // console.dir(changes);
 
         if(this.MockCanvas) {
 
+          this.MockCanvas.set_viewport($element[0]);
+
           $window.addEventListener('resize', () => {
-            this.MockCanvas.reflow($element[0]);
+            this.MockCanvas.reflow();
+            $scope.$digest();
           });
 
-          this.MockCanvas.reflow($element[0]);
+          this.MockCanvas.reflow();
+
+          // console.log('reflow', this.MockCanvas.camera.zoom);
 
         }
       };
@@ -236,6 +260,59 @@
           $scope.$digest();
         });
 
+        $element[0].addEventListener('wheel', (event) => {
+          event.preventDefault();
+
+          let mousex = event.clientX - $element[0].offsetLeft - $element[0].offsetWidth/2;
+          let mousey = event.clientY - $element[0].offsetTop - $element[0].offsetHeight/2;
+          // Normalize wheel to +1 or -1.
+          let wheel = event.wheelDelta/120;
+
+          // Compute zoom factor.
+          let zoom = Math.exp(wheel*0.2);
+
+          let new_zoom = this.MockCanvas.camera.zoom * zoom;
+
+          if(new_zoom <= 0.02 || new_zoom >= 2) {
+            return;
+          }
+
+          this.MockCanvas.camera.x -= mousex/(this.MockCanvas.camera.zoom*zoom) - mousex/this.MockCanvas.camera.zoom;
+          this.MockCanvas.camera.y -= mousey/(this.MockCanvas.camera.zoom*zoom) - mousey/this.MockCanvas.camera.zoom;
+
+          this.MockCanvas.camera.zoom = new_zoom;
+
+          this.MockCanvas.reflow();
+
+          $scope.$apply();
+          // console.log(event);
+          // console.log(this.MockCanvas.camera);
+        });
+
+        $window.addEventListener('keydown', (event) => {
+
+          let move_delta = 50/this.MockCanvas.camera.zoom;
+
+          switch(event.keyCode) {
+
+            case 37:
+              this.MockCanvas.camera.x-=move_delta;
+              break;
+            case 38:
+              this.MockCanvas.camera.y-=move_delta;
+              break;
+            case 39:
+              this.MockCanvas.camera.x+=move_delta;
+              break;
+            case 40:
+              this.MockCanvas.camera.y+=move_delta;
+              break;
+          }
+
+          $scope.$digest();
+
+        });
+
       };
 
       this.remove_mock = (mock) => {
@@ -243,11 +320,15 @@
       };
 
       this.drag_mock = (mock, type, event) => {
+
         if(type === 'move'){
           let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
           let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-          mock.x = parseInt(parseFloat(mock.x) + directionX/this.MockCanvas.camera.zoom).toString();
-          mock.y = parseInt(parseFloat(mock.y) + directionY/this.MockCanvas.camera.zoom).toString();
+          let move_delta_x = (directionX/this.MockCanvas.camera.zoom);
+          let move_delta_y = (directionY/this.MockCanvas.camera.zoom);
+          mock.x = parseInt(parseFloat(mock.x) + move_delta_x).toString();
+          mock.y = parseInt(parseFloat(mock.y) + move_delta_y).toString();
+          // console.log(mock.x, mock.y, this.MockCanvas.camera.zoom, move_delta_x, move_delta_y);
         }
         if(type === 'end'){
           mock.save();
@@ -263,17 +344,18 @@
 
   gallery.component('mock', {
 
-    bindings: { mock: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag' },
+    bindings: { mock: '<', delete: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag' },
     template: `
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
-        <div class="mock_overlay" data-ng-if="$ctrl.edit">
+        <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete">
           <div class="mock_edit_tools">
-            <button class="delete_btn" type="button" data-ng-click="$ctrl.remove_mock()">Delete</button>                 
+            <!--<button class="delete_btn" type="button" data-ng-click="$ctrl.remove_mock()">Delete</button>                 -->
           </div>
           <div class="mock_coord top left">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
         </div>
+        <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
       </div>
       
       <div class="mock_preview" data-ng-if="$ctrl.preview" data-overlay-click="$ctrl.preview = false;">
@@ -311,7 +393,10 @@
           // console.dir(overlay);
           if(!overlay) return;
 
-          overlay.addEventListener('mousedown', (e) => {
+          let new_element = overlay.cloneNode(true);
+          overlay.parentNode.replaceChild(new_element, overlay);
+
+          new_element.addEventListener('mousedown', (e) => {
             e.preventDefault();
 
             if(!this.dragging && e.which === 1) {
@@ -323,7 +408,7 @@
 
           }, false);
 
-          overlay.addEventListener('mousemove', (e) => {
+          new_element.addEventListener('mousemove', (e) => {
             e.preventDefault();
 
             if(this.dragging && e.which === 1) {
@@ -335,7 +420,7 @@
 
           }, false);
 
-          overlay.addEventListener('mouseup', (e) => {
+          new_element.addEventListener('mouseup', (e) => {
             e.preventDefault();
             if(this.dragging) {
               $element[0].style.zIndex = 0;
@@ -345,7 +430,7 @@
             }
           }, false);
 
-          overlay.addEventListener('mouseleave', (e) => {
+          new_element.addEventListener('mouseleave', (e) => {
             e.preventDefault();
             if(this.dragging) {
               $element[0].style.zIndex = 0;
@@ -359,7 +444,16 @@
 
 
 
-      }
+      };
+
+      this.$onChanges = (changes) => {
+
+        // console.dir(changes);
+        if(!changes.delete.currentValue && changes.delete.previousValue) {
+          this.$onInit();
+        }
+
+      };
 
     }
   });
