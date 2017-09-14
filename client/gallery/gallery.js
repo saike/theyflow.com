@@ -413,7 +413,7 @@
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
-        <div class="mock_coord top left">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
+        <div class="mock_coord top left" data-ng-if="$ctrl.edit">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
         <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
         <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
       </div>
