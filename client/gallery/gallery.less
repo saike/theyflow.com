@@ -122,14 +122,19 @@ mock {
   }
 
   .mock_coord {
+    position: absolute;
+    top:0;
+    left: 0;
     color: #fff;
     padding: 5%;
     max-width: 100%;
+    box-sizing: border-box;
     font-size: 60%;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     pointer-events: none;
+    z-index: 2;
   }
 
   .mock_preview {

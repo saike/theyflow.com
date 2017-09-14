@@ -141,6 +141,23 @@
         this.element = false;
 
       }
+      visible_mocks(){
+
+        let viewport = this.viewport();
+
+        let visible = this.mocks.filter((mock) => {
+
+          let outside = mock.x + 1000 < viewport.left || mock.x > viewport.right || mock.y > viewport.bottom || mock.y < viewport.top - 2000;
+
+          return !outside;
+
+        });
+
+        // console.dir(visible);
+
+        return visible;
+
+      }
       reflow(elm) {
 
         elm = elm || this.element;
@@ -197,12 +214,12 @@
     bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
       `
-        <mock data-ng-repeat="mock in $ctrl.MockCanvas.mocks" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
+        <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
         <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
           <h3>No mocks found...</h3>
         </div>
       `,
-    controller($element, $window, $scope){
+    controller($element, $window, $scope, $interval){
 
       this.$onChanges = (changes) => {
 
@@ -289,29 +306,76 @@
           // console.log(this.MockCanvas.camera);
         });
 
+        let camera_move = [ false, false, false, false ];
+
+        let move_interval = false;
+
         $window.addEventListener('keydown', (event) => {
 
-          let move_delta = 50/this.MockCanvas.camera.zoom;
+          let move_delta = 20/this.MockCanvas.camera.zoom;
+
+          move_interval && $interval.cancel(move_interval);
+
+          move_interval = $interval(() => {
+
+            if(camera_move[0]) {
+              this.MockCanvas.camera.x-=move_delta;
+            }
+            if(camera_move[1]) {
+              this.MockCanvas.camera.y-=move_delta;
+            }
+            if(camera_move[2]) {
+              this.MockCanvas.camera.x+=move_delta;
+            }
+            if(camera_move[3]) {
+              this.MockCanvas.camera.y+=move_delta;
+            }
+
+          }, 1000/60);
 
           switch(event.keyCode) {
 
             case 37:
-              this.MockCanvas.camera.x-=move_delta;
+              camera_move[0] = true;
               break;
             case 38:
-              this.MockCanvas.camera.y-=move_delta;
+              camera_move[1] = true;
               break;
             case 39:
-              this.MockCanvas.camera.x+=move_delta;
+              camera_move[2] = true;
               break;
             case 40:
-              this.MockCanvas.camera.y+=move_delta;
+              camera_move[3] = true;
               break;
+
           }
 
           $scope.$digest();
 
         });
+
+        $window.addEventListener('keyup', (event) => {
+          switch(event.keyCode) {
+
+            case 37:
+              camera_move[0] = false;
+              break;
+            case 38:
+              camera_move[1] = false;
+              break;
+            case 39:
+              camera_move[2] = false;
+              break;
+            case 40:
+              camera_move[3] = false;
+              break;
+
+          }
+          if(move_interval && !camera_move.some(move => move)) {
+            $interval.cancel(move_interval);
+            move_interval = false;
+          }
+        })
 
       };
 
@@ -326,8 +390,8 @@
           let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
           let move_delta_x = (directionX/this.MockCanvas.camera.zoom);
           let move_delta_y = (directionY/this.MockCanvas.camera.zoom);
-          mock.x = parseInt(parseFloat(mock.x) + move_delta_x).toString();
-          mock.y = parseInt(parseFloat(mock.y) + move_delta_y).toString();
+          mock.x = parseInt(parseFloat(mock.x) + move_delta_x);
+          mock.y = parseInt(parseFloat(mock.y) + move_delta_y);
           // console.log(mock.x, mock.y, this.MockCanvas.camera.zoom, move_delta_x, move_delta_y);
         }
         if(type === 'end'){
@@ -349,12 +413,8 @@
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
-        <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete">
-          <div class="mock_edit_tools">
-            <!--<button class="delete_btn" type="button" data-ng-click="$ctrl.remove_mock()">Delete</button>                 -->
-          </div>
-          <div class="mock_coord top left">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
-        </div>
+        <div class="mock_coord top left">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
+        <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
         <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
       </div>
       
@@ -363,7 +423,7 @@
       </div>
     
     `,
-    controller($element, $timeout, $scope){
+    controller($element, $timeout, $scope, $compile){
 
       this.dragging = false;
 
@@ -567,7 +627,9 @@
     return class Mock{
 
       constructor(data){
+
         Object.assign(this, data);
+
       }
       save(){
         if(!this._id){

@@ -1,14 +1,16 @@
 import mongoose, { Schema } from 'mongoose';
 
 const MockSchema = new Schema({
-  x: String,
-  y: String,
+  x: Number,
+  y: Number,
   title: String,
   url: String,
   type: String,
-  width: String,
-  height: String
+  width: Number,
+  height: Number
 });
+
+
 
 // UserSchema.pre('save', async function (next) {
 //
@@ -29,13 +31,15 @@ const MockSchema = new Schema({
 //   return bcrypt.compare(password, this.password);
 // };
 //
-// MockSchema.methods.visible = function (password) {
-//   return {
-//     name: this.facebook.name,
-//     picture: this.facebook.picture,
-//     email: this.facebook.email,
-//     id: this._id
-//   };
+// MockSchema.methods.visible = function () {
+//
+//   let json = Object.assign({}, this);
+//
+//   json.x = parseInt(json.x);
+//   json.y = parseInt(json.y);
+//
+//   return json;
+//
 // };
 
 export default mongoose.model('Mock', MockSchema);
