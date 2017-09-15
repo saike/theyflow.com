@@ -314,24 +314,24 @@
 
           let move_delta = 20/this.MockCanvas.camera.zoom;
 
-          move_interval && $interval.cancel(move_interval);
+          if(!move_interval) {
+            move_interval = $interval(() => {
 
-          move_interval = $interval(() => {
+              if(camera_move[0]) {
+                this.MockCanvas.camera.x-=move_delta;
+              }
+              if(camera_move[1]) {
+                this.MockCanvas.camera.y-=move_delta;
+              }
+              if(camera_move[2]) {
+                this.MockCanvas.camera.x+=move_delta;
+              }
+              if(camera_move[3]) {
+                this.MockCanvas.camera.y+=move_delta;
+              }
 
-            if(camera_move[0]) {
-              this.MockCanvas.camera.x-=move_delta;
-            }
-            if(camera_move[1]) {
-              this.MockCanvas.camera.y-=move_delta;
-            }
-            if(camera_move[2]) {
-              this.MockCanvas.camera.x+=move_delta;
-            }
-            if(camera_move[3]) {
-              this.MockCanvas.camera.y+=move_delta;
-            }
-
-          }, 1000/60);
+            }, 1000/60);
+          }
 
           switch(event.keyCode) {
 
@@ -350,7 +350,7 @@
 
           }
 
-          $scope.$digest();
+          // $scope.$digest();
 
         });
 
