@@ -37,6 +37,7 @@
         <div class="nav_bar" data-ng-if="$ctrl.auth.authorized">
           <button type="button" class="nav_bar_btn delete" data-ng-class="{ active: $ctrl.delete.enabled }" data-ng-click="$ctrl.delete.enabled = !$ctrl.delete.enabled;">Delete</button>
           <button type="button" class="nav_bar_btn create" data-ng-click="$ctrl.wizard.open()">Create</button>
+          <button type="button" class="nav_bar_btn sizes" data-ng-click="$ctrl.calculate_size()">Calculate sizes</button>
         </div>
         <div class="create_modal" data-ng-show="$ctrl.wizard.show">
           <form class="create_form" novalidate data-ng-submit="$ctrl.wizard.create()">
@@ -115,6 +116,28 @@
         }
       };
 
+      this.calculate_size = () => {
+
+        for(let mock of this.MockCanvas.mocks) {
+
+          if(mock.width && mock.height) continue;
+
+          let mock_image = new Image();
+
+          mock_image.src = mock.url;
+
+          mock_image.onload = () => {
+
+            mock.width = mock_image.naturalWidth;
+            mock.height = mock_image.naturalHeight;
+            mock.save();
+
+          };
+
+        }
+
+      };
+
       this.delete = {
         enabled: false
       };
@@ -147,7 +170,7 @@
 
         let visible = this.mocks.filter((mock) => {
 
-          let outside = mock.x + 1000 < viewport.left || mock.x > viewport.right || mock.y > viewport.bottom || mock.y < viewport.top - 2000;
+          let outside = mock.x + 1000 < viewport.left || mock.x > viewport.right || mock.y > viewport.bottom || mock.y < viewport.top - (mock.height * 1000/mock.width);
 
           return !outside;
 
@@ -189,7 +212,8 @@
         return {
           top: (mock.y - viewport.top)*this.camera.zoom + 'px',
           left: (mock.x - viewport.left)*this.camera.zoom + 'px',
-          width: (this.camera.zoom*1000) + 'px'
+          width: (this.camera.zoom*1000) + 'px',
+          height: (this.camera.zoom*(mock.height * 1000/mock.width)) + 'px'
         }
 
       }
@@ -413,7 +437,10 @@
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
         <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
-        <div class="mock_coord top left" data-ng-if="$ctrl.edit">x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }}</div>
+        <div class="mock_coord top left" data-ng-if="$ctrl.edit">
+          x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }} <br>
+          w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
+        </div>
         <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
         <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
       </div>

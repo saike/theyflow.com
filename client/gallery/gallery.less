@@ -49,6 +49,7 @@ mock {
   width: 16.666vw;
   vertical-align: top;
   position: absolute;
+  background-color: rgba(0,0,0,0.1);
 
   img {
     vertical-align: top;
@@ -213,6 +214,20 @@ gallery {
 
       &.active {
         background-color: darken(thistle, 30%);
+      }
+
+    }
+
+    &.sizes {
+
+      background-color: cornflowerblue;
+
+      &:hover {
+        background-color: darken(cornflowerblue, 10%);
+      }
+
+      &.active {
+        background-color: darken(cornflowerblue, 30%);
       }
 
     }
