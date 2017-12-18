@@ -441,9 +441,11 @@
           x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }} <br>
           w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
         </div>
-        <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
-        <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
+       
       </div>
+      
+      <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
+      <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
       
       <div class="mock_preview" data-ng-if="$ctrl.preview" data-overlay-click="$ctrl.preview = false;">
         <img data-ng-src="{{ $ctrl.mock.url }}" alt="">

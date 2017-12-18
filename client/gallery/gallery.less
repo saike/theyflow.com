@@ -45,14 +45,15 @@ login {
 
 mock {
 
+  @border_width: 1px;
+
   display: inline-block;
   width: 16.666vw;
   vertical-align: top;
   position: absolute;
   background-color: rgba(0,0,0,0.1);
-  -webkit-box-shadow: inset 0px 0px 19px 0px rgba(0,0,0,0.3);
-  -moz-box-shadow: inset 0px 0px 19px 0px rgba(0,0,0,0.3);
-  box-shadow: inset 0px 0px 19px 0px rgba(0,0,0,0.3);
+  border: @border_width solid rgba(0,0,0,0.4);
+  box-sizing: border-box;
 
   img {
     vertical-align: top;
@@ -60,7 +61,11 @@ mock {
   }
 
   .mock_container {
-    position: relative;
+    position: absolute;
+    left: -@border_width;
+    right: -@border_width;
+    top: -@border_width;
+    bottom: -@border_width;
   }
 
   .mock_overlay {
