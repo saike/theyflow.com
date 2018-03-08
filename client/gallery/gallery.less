@@ -171,8 +171,8 @@ mock {
 
   .mock_layer_tools {
     position: absolute;
-    right: 4%;
-    top: 2%;
+    right: 2%;
+    bottom: 2%;
     max-width: 90%;
     font-size: 0;
     text-align: left;
@@ -196,6 +196,17 @@ mock {
 
     span {
       color: #fff;
+    }
+
+  }
+
+  &.selected {
+
+    .mock_overlay {
+      visibility: visible;
+      opacity: 1;
+      background-color: rgba(0,0,0,0.8);
+
     }
 
   }

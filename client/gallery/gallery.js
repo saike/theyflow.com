@@ -239,7 +239,7 @@
     bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
       `
-        <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)"></mock>
+        <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-click="$ctrl.selector.toggle(mock)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
         <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
           <h3>No mocks found...</h3>
         </div>
@@ -408,21 +408,41 @@
         this.MockCanvas.mocks.splice(this.MockCanvas.mocks.indexOf(mock), 1);
       };
 
-      this.drag_mock = (mock, type, event) => {
+      this.selector = {
+        selected: [],
+        toggle: (mock) => {
 
-        if(type === 'move'){
-          let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-          let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-          let move_delta_x = (directionX/this.MockCanvas.camera.zoom);
-          let move_delta_y = (directionY/this.MockCanvas.camera.zoom);
-          mock.x = parseInt(parseFloat(mock.x) + move_delta_x);
-          mock.y = parseInt(parseFloat(mock.y) + move_delta_y);
-          // console.log(mock.x, mock.y, this.MockCanvas.camera.zoom, move_delta_x, move_delta_y);
+          if(this.selector.selected.indexOf(mock) >= 0){
+
+            this.selector.selected.splice(this.selector.selected.indexOf(mock), 1);
+
+          }
+          else {
+            this.selector.selected.push(mock);
+          }
+
         }
-        if(type === 'end'){
-          mock.save();
-          console.log('save mock');
-        }
+      };
+
+      this.drag_mock = (mock_target, type, event) => {
+
+        this.selector.selected.forEach((mock) => {
+          if(type === 'move'){
+            let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+            let move_delta_x = (directionX/this.MockCanvas.camera.zoom);
+            let move_delta_y = (directionY/this.MockCanvas.camera.zoom);
+            mock.x = parseInt(parseFloat(mock.x) + move_delta_x);
+            mock.y = parseInt(parseFloat(mock.y) + move_delta_y);
+            // console.log(mock.x, mock.y, this.MockCanvas.camera.zoom, move_delta_x, move_delta_y);
+          }
+          if(type === 'end'){
+            mock.save();
+            console.log('save mock');
+          }
+        });
+
+
         // console.log(type, mock);
 
       };
