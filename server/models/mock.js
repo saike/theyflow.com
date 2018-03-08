@@ -7,7 +7,8 @@ const MockSchema = new Schema({
   url: String,
   type: String,
   width: Number,
-  height: Number
+  height: Number,
+  layer: Number
 });
 
 

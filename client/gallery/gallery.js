@@ -213,7 +213,8 @@
           top: (mock.y - viewport.top)*this.camera.zoom + 'px',
           left: (mock.x - viewport.left)*this.camera.zoom + 'px',
           width: (this.camera.zoom*1000) + 'px',
-          height: (this.camera.zoom*(mock.height * 1000/mock.width)) + 'px'
+          height: (this.camera.zoom*(mock.height * 1000/mock.width)) + 'px',
+          zIndex: mock.layer
         }
 
       }
@@ -441,6 +442,12 @@
           x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }} <br>
           w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
         </div>
+        
+        <div class="mock_layer_tools" data-ng-if="$ctrl.edit">
+          <button type="button" data-ng-click="$ctrl.change_layer(true)">&nbsp;+&nbsp;</button> 
+          <span>{{ $ctrl.mock.layer || 0 }}</span>
+          <button type="button" data-ng-click="$ctrl.change_layer(false)">&nbsp;-&nbsp;</button> 
+        </div>
        
       </div>
       
@@ -471,6 +478,23 @@
           }
 
         });
+      };
+
+      this.change_layer = (direction) => {
+
+        this.mock.layer = this.mock.layer || 0;
+
+        if(direction){
+
+          this.mock.layer+=1;
+
+        }
+        else {
+          this.mock.layer-=1;
+        }
+
+        this.mock.save();
+
       };
 
       this.$onInit = () => {
