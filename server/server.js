@@ -61,6 +61,6 @@ app.all('/*', (req, res, next) => {
 });
 
 
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!')
+app.listen(CONFIG.PORT, function () {
+  console.log(`Example app listening on port: ${CONFIG.PORT}`);
 });
