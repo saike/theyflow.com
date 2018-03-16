@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "node_modules/.bin/nodemon -L --exec babel-node server/server.js",
-    "prod": "node_modules/.bin/pm2 start --interpreter babel-node server/server.js",
-    "restart": "node_modules/.bin/pm2 restart --interpreter babel-node server",
-    "stop": "node_modules/.bin/pm2 stop --interpreter babel-node server",
+    "babel-node": "babel-node --presets=latest",
+    "dev": "./node_modules/.bin/nodemon -L --ignore 'data/' --exec npm run babel-node -- ./server/server.js",
+    "prod": "./node_modules/.bin/pm2 start --interpreter babel-node ./server/server.js",
+    "restart": "./node_modules/.bin/pm2 restart --interpreter babel-node server",
+    "stop": "./node_modules/.bin/pm2 stop --interpreter babel-node cryptobot",
     "migrate": "babel-node ./node_modules/.bin/mm migrate --config=server/config/mongodb.js",
     "rebundle": "rm -rf ./node_modules && rm -rf ./server/node_modules && npm i && cd server && npm i && cd .."
   },
