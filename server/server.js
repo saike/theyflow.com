@@ -1,4 +1,5 @@
 import express from 'express';
+import path from 'path';
 
 //config
 import CONFIG from './config';
@@ -33,11 +34,11 @@ mongoose.connect([ CONFIG.MONGODB.HOST, CONFIG.MONGODB.DATABASE_NAME ].join('/')
 
 //use es6 template render
 app.engine('html', Render);
-app.set('views', '../client');
+app.set('views', path.join(__dirname, '..', 'client'));
 app.set('view engine', 'html');
 
 //static server
-app.use(express.static('../client'));
+app.use(express.static(path.join(__dirname, '..', 'client')));
 
 //request parsers
 app.use(body_parser.json());

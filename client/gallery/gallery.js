@@ -243,6 +243,7 @@
         <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
           <h3>No mocks found...</h3>
         </div>
+        <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
       `,
     controller($element, $window, $scope, $interval){
 
@@ -410,16 +411,25 @@
 
       this.selector = {
         selected: [],
+        preview: false,
         toggle: (mock) => {
 
-          if(this.selector.selected.indexOf(mock) >= 0){
+          if(this.edit) {
 
-            this.selector.selected.splice(this.selector.selected.indexOf(mock), 1);
+            if(this.selector.selected.indexOf(mock) >= 0){
+
+              this.selector.selected.splice(this.selector.selected.indexOf(mock), 1);
+
+            }
+            else {
+              this.selector.selected.push(mock);
+            }
 
           }
           else {
-            this.selector.selected.push(mock);
+            this.selector.preview = !this.selector.preview ? mock : false;
           }
+
 
         }
       };
@@ -451,6 +461,18 @@
 
   });
 
+  gallery.component('mockPreview', {
+
+    bindings: { mock: '<', on_close: '&onClose' },
+    template: `
+      <img data-ng-src="{{ $ctrl.mock.url }}" alt="">
+    `,
+    controller(){
+
+    }
+
+  });
+
   gallery.component('mock', {
 
     bindings: { mock: '<', delete: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag' },
@@ -473,10 +495,6 @@
       
       <div class="mock_overlay" data-ng-if="$ctrl.edit && !$ctrl.delete"></div>
       <div class="mock_overlay_delete" data-ng-if="$ctrl.delete" data-ng-click="$ctrl.remove_mock();"></div>
-      
-      <div class="mock_preview" data-ng-if="$ctrl.preview" data-overlay-click="$ctrl.preview = false;">
-        <img data-ng-src="{{ $ctrl.mock.url }}" alt="">
-      </div>
     
     `,
     controller($element, $timeout, $scope, $compile){

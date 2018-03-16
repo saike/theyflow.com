@@ -71,7 +71,7 @@ mock {
   .mock_overlay {
 
     position: absolute;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(255,255,255,0.5);
     visibility: hidden;
     opacity: 0;
     width: 100%;
@@ -146,29 +146,6 @@ mock {
     z-index: 2;
   }
 
-  .mock_preview {
-
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.9);
-    z-index: 10000;
-
-    img {
-      width: auto;
-      height: auto;
-      max-width: 100%;
-      max-height: 100%;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-
-  }
-
   .mock_layer_tools {
     position: absolute;
     right: 2%;
@@ -205,7 +182,7 @@ mock {
     .mock_overlay {
       visibility: visible;
       opacity: 1;
-      background-color: rgba(0,0,0,0.8);
+      background-color: rgba(255,255,255,0.7);
 
     }
 
@@ -361,6 +338,29 @@ mock-canvas {
   background-color: #030303;
 
   .empty_mocks_overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+}
+
+mock-preview {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.9);
+  z-index: 100000;
+
+  img {
+    width: auto;
+    height: auto;
+    max-width: 100%;
+    max-height: 100%;
     position: absolute;
     top: 50%;
     left: 50%;
