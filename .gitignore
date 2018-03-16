@@ -4,6 +4,7 @@ server/config/local.json
 .idea
 node_modules
 .vagrant
+package-lock.json
 
 # apple gitignore
 
