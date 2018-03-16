@@ -238,12 +238,14 @@
 
     bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
-      `
-        <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-click="$ctrl.selector.toggle(mock)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
-        <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
-          <h3>No mocks found...</h3>
+      `  
+        <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect()">
+          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.toggle(mock)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
+          <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
+            <h3>No mocks found...</h3>
+          </div>
+          <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
         </div>
-        <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
       `,
     controller($element, $window, $scope, $interval){
 
@@ -412,6 +414,9 @@
       this.selector = {
         selected: [],
         preview: false,
+        deselect: () => {
+          this.selector.selected = [];
+        },
         toggle: (mock) => {
 
           if(this.edit) {
