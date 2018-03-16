@@ -239,15 +239,15 @@
     bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
       `  
-        <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect()">
-          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.toggle(mock)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
+        <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect_all()">
+          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
           <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
             <h3>No mocks found...</h3>
           </div>
           <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
         </div>
       `,
-    controller($element, $window, $scope, $interval){
+    controller($element, $window, $scope, $interval, $timeout){
 
       this.$onChanges = (changes) => {
 
@@ -413,11 +413,38 @@
 
       this.selector = {
         selected: [],
+        selecting: false,
         preview: false,
-        deselect: () => {
+        deselect_all: () => {
           this.selector.selected = [];
         },
-        toggle: (mock) => {
+        select: (mock, $event) => {
+
+          if($event.which !== 1) return;
+
+          if(this.edit) {
+
+            if(this.selector.selected.indexOf(mock) < 0){
+              this.selector.selected.push(mock);
+              this.selector.selecting = true;
+            }
+
+          }
+          else {
+            this.selector.preview = mock;
+          }
+
+        },
+        deselect: (mock, $event) => {
+
+          if($event.which !== 1) return;
+
+          if(this.selector.selecting) {
+            this.selector.selecting = false;
+            return;
+          }
+
+          if(this.dragging) return;
 
           if(this.edit) {
 
@@ -426,23 +453,23 @@
               this.selector.selected.splice(this.selector.selected.indexOf(mock), 1);
 
             }
-            else {
-              this.selector.selected.push(mock);
-            }
 
           }
           else {
-            this.selector.preview = !this.selector.preview ? mock : false;
+            this.selector.preview = false
           }
 
 
         }
       };
 
+      this.dragging = false;
+
       this.drag_mock = (mock_target, type, event) => {
 
         this.selector.selected.forEach((mock) => {
           if(type === 'move'){
+            this.dragging = true;
             let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
             let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
             let move_delta_x = (directionX/this.MockCanvas.camera.zoom);
@@ -452,6 +479,9 @@
             // console.log(mock.x, mock.y, this.MockCanvas.camera.zoom, move_delta_x, move_delta_y);
           }
           if(type === 'end'){
+            $timeout(() => {
+              this.dragging = false;
+            }, 10);
             mock.save();
             console.log('save mock');
           }
@@ -490,10 +520,10 @@
           w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
         </div>
         
-        <div class="mock_layer_tools" data-ng-if="$ctrl.edit">
-          <button type="button" data-ng-click="$ctrl.change_layer(true)">&nbsp;+&nbsp;</button> 
+        <div class="mock_layer_tools" data-ng-if="$ctrl.edit" data-ng-mousedown="$event.stopPropagation();" data-ng-mouseup="$event.stopPropagation()">
+          <button type="button" data-ng-click="$ctrl.change_layer(true);">&nbsp;+&nbsp;</button> 
           <span>{{ $ctrl.mock.layer || 0 }}</span>
-          <button type="button" data-ng-click="$ctrl.change_layer(false)">&nbsp;-&nbsp;</button> 
+          <button type="button"  data-ng-click="$ctrl.change_layer(false);">&nbsp;-&nbsp;</button> 
         </div>
        
       </div>
@@ -554,13 +584,15 @@
 
           new_element.addEventListener('mousedown', (e) => {
             e.preventDefault();
+            $timeout(() => {
+              if(!this.dragging && e.which === 1) {
+                this.dragging = true;
+                this.on_drag && this.on_drag(this.mock, 'start', e);
+                $scope.$apply();
+                console.dir(e);
+              }
+            }, 100);
 
-            if(!this.dragging && e.which === 1) {
-              this.dragging = true;
-              this.on_drag && this.on_drag(this.mock, 'start', e);
-              $scope.$apply();
-              console.dir(e);
-            }
 
           }, false);
 
