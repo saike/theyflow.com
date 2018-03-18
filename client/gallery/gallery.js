@@ -63,10 +63,10 @@
 
       this.$onInit = () => {
 
-        this.MockCanvas.camera.zoom = parseFloat($stateParams.zoom) || $window.innerWidth/6/1000;
+        this.MockCanvas.camera.zoom = parseFloat($stateParams.zoom) || 0.02 || $window.innerWidth/6/1000;
 
-        this.MockCanvas.camera.x = parseFloat($stateParams.x) || 0;
-        this.MockCanvas.camera.y = parseFloat($stateParams.y) || 0;
+        this.MockCanvas.camera.x = parseFloat($stateParams.x) || 331.43;
+        this.MockCanvas.camera.y = parseFloat($stateParams.y) || 10447.14;
 
         Mock.list().then((mocks) => {
 
@@ -153,7 +153,7 @@
         this.mocks = [];
 
         this.camera = {
-          zoom: 1,
+          zoom: 0.02,
           x: 0,
           y: 0,
           width: 1440,
@@ -263,11 +263,6 @@
         if(this.MockCanvas) {
 
           this.MockCanvas.set_viewport($element[0]);
-
-          $window.addEventListener('resize', () => {
-            this.MockCanvas.reflow();
-            $scope.$digest();
-          });
 
           this.MockCanvas.reflow();
 
@@ -414,7 +409,12 @@
             $interval.cancel(move_interval);
             move_interval = false;
           }
-        })
+        });
+
+        $window.addEventListener('resize', () => {
+          this.MockCanvas && this.MockCanvas.reflow();
+          $scope.$digest();
+        });
 
       };
 
