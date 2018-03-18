@@ -239,6 +239,13 @@
     bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
     template:
       `  
+        <div class="canvas_logger" data-ng-if="$ctrl.logger.show">
+          Camera:
+          <br>
+          x: {{ $ctrl.MockCanvas.camera.x | number:2 }},
+          y: {{ $ctrl.MockCanvas.camera.y | number:2 }},
+          zoom: {{ $ctrl.MockCanvas.camera.zoom | number:2 }}
+        </div>
         <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect_all()">
           <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
           <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
@@ -397,6 +404,10 @@
             case 40:
               camera_move[3] = false;
               break;
+            case 76:
+              this.logger.show = !this.logger.show;
+              $scope.$apply();
+              break;
 
           }
           if(move_interval && !camera_move.some(move => move)) {
@@ -490,6 +501,10 @@
 
         // console.log(type, mock);
 
+      };
+
+      this.logger = {
+        show: false
       };
 
     }
