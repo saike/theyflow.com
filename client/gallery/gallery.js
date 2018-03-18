@@ -508,13 +508,29 @@
 
   });
 
+  gallery.directive('ngOnload', function () {
+
+    return {
+      restrict: 'A',
+      link: function (scope, element, attrs) {
+
+        element.bind('load', function () {
+          scope.$eval(attrs.ngOnload);
+          scope.$apply();
+        });
+
+      }
+    };
+
+  });
+
   gallery.component('mock', {
 
     bindings: { mock: '<', delete: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag' },
     template: `
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
-        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-click="$ctrl.preview = true;" data-ng-src="{{ $ctrl.mock.url }}" alt="">
+        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock.url }}" data-ng-onload="$ctrl.loaded = true;" alt="" data-ng-class="{ visible: $ctrl.loaded }">
         <div class="mock_coord top left" data-ng-if="$ctrl.edit">
           x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }} <br>
           w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
@@ -536,7 +552,7 @@
 
       this.dragging = false;
 
-      this.preview = false;
+      this.loaded = false;
 
       //start drag
 

@@ -1,3 +1,5 @@
+//@import (reference) "../core/mixins";
+
 login {
 
   display: block;
@@ -58,6 +60,16 @@ mock {
   img {
     vertical-align: top;
     cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    .transition(opacity 1s linear);
+
+    &.visible {
+      .transition(opacity 1s linear);
+      opacity: 1;
+      visibility: visible;
+    }
+
   }
 
   .mock_container {
@@ -379,4 +391,12 @@ mock-preview {
     transform: translate(-50%, -50%);
   }
 
+}
+
+//helpers
+.transition (@transition) {
+  -webkit-transition: @transition;
+  -moz-transition:    @transition;
+  -ms-transition:     @transition;
+  -o-transition:      @transition;
 }
