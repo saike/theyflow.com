@@ -247,7 +247,7 @@
           zoom: {{ $ctrl.MockCanvas.camera.zoom | number:2 }}
         </div>
         <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect_all()">
-          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0 }"></mock>
+          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0, minimized: $ctrl.MockCanvas.camera.zoom < 0.05 }"></mock>
           <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
             <h3>No mocks found...</h3>
           </div>
