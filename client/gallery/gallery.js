@@ -668,7 +668,7 @@
       this.$onChanges = (changes) => {
 
         // console.dir(changes);
-        if(!changes.delete.currentValue && changes.delete.previousValue) {
+        if(changes.delete && !changes.delete.currentValue && changes.delete.previousValue) {
           this.$onInit();
         }
 

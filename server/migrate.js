@@ -53,14 +53,43 @@ const download_mocks = (mocks) => {
 
   return new Promise((resolve, reject) => {
 
-    for(let i = 0; i < mocks.length; i+=1) {
+    let current = 0;
 
+    let download = function () {
+      download_mock(mocks[current]).then(() => {
 
-      let mock = mocks[i];
+        if(current < mocks.length) {
 
-      download_mock(mock);
+          current++;
 
-    }
+          download();
+
+        }
+        else {
+
+          console.log('DOWNLOADING COMPLETE');
+
+        }
+
+      }, (err) => {
+
+        if(current < mocks.length) {
+
+          current++;
+
+          download();
+
+        }
+        else {
+
+          console.log('DOWNLOADING COMPLETE');
+
+        }
+
+      });
+    };
+
+    download();
 
   });
 
@@ -80,6 +109,13 @@ const download_mock = (mock) => {
       // console.log(body);
 
       // let re = /(?:\.([^.]+))?$/;
+
+      if(err) {
+
+        reject(err);
+        return;
+
+      }
 
       let image_extension = mock.url.split('.').pop();
 
@@ -103,7 +139,7 @@ const download_mock = (mock) => {
 
             let resized_file_name = path.join(__dirname, '..', 'media', 'mocks', scale.dir, `${mock._id}.${image_extension}`);
 
-            console.log(scale.scale);
+            // console.log(scale.scale);
 
             let clone = image.clone();
 
