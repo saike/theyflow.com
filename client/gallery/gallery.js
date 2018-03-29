@@ -893,9 +893,7 @@
 
       };
 
-      let image_extension = mock.url.split('.').pop();
-
-      return `/media/mocks/${ current_scale.dir }/${ mock._id }.${image_extension}`;
+      return `/media/mocks/${ current_scale.dir }/${ mock._id }.png`;
 
     };
 

@@ -56,6 +56,9 @@ const download_mocks = (mocks) => {
     let current = 0;
 
     let download = function () {
+
+      console.log(`Migrated: ${current}/${mocks.length}`);
+
       download_mock(mocks[current]).then(() => {
 
         if(current < mocks.length) {
@@ -117,46 +120,59 @@ const download_mock = (mock) => {
 
       }
 
-      let image_extension = mock.url.split('.').pop();
+      let file_name = path.join(__dirname, '..', 'media', 'mocks', '1x', `${mock._id}.png`);
 
-      let file_name = path.join(__dirname, '..', 'media', 'mocks', '1x', `${mock._id}.${image_extension}`);
+      if(fs.existsSync(file_name)) {
 
-      request(mock.url).pipe(fs.createWriteStream(file_name)).on('close', () => {
-        console.warn(`Mock download finish: ${mock.id}`);
+        make_thumbs(mock, file_name);
 
-        jimp.read(file_name, (err, image) => {
+      }
+      else {
+        request(mock.url).pipe(fs.createWriteStream(file_name)).on('close', () => {
+          console.warn(`Mock download finish: ${mock.id}`);
 
-          if (err) {
+          make_thumbs(mock, file_name);
 
-            console.error(`Cannot read image: ${file_name}`);
-            return;
-
-          }
-
-          console.log(image.bitmap.width);
-
-          IMAGE_SCALES.forEach((scale) => {
-
-            let resized_file_name = path.join(__dirname, '..', 'media', 'mocks', scale.dir, `${mock._id}.${image_extension}`);
-
-            // console.log(scale.scale);
-
-            let clone = image.clone();
-
-            clone.resize(image.bitmap.width * parseFloat(scale.scale), jimp.AUTO).write(resized_file_name);
-
-
-
-          });
-
+          resolve(mock);
         });
+      }
 
-        resolve(mock);
-      });
+
     });
 
   });
 
+
+};
+
+const make_thumbs = (mock, file_name) => {
+
+  jimp.read(file_name, (err, image) => {
+
+    if (err) {
+
+      console.error(`Cannot read image: ${file_name}`);
+      return;
+
+    }
+
+    // console.log(image.bitmap.width);
+
+    IMAGE_SCALES.forEach((scale) => {
+
+      let resized_file_name = path.join(__dirname, '..', 'media', 'mocks', scale.dir, `${mock._id}.png`);
+
+      // console.log(scale.scale);
+
+      let clone = image.clone();
+
+      clone.resize(image.bitmap.width * parseFloat(scale.scale), jimp.AUTO).write(resized_file_name);
+
+
+
+    });
+
+  });
 
 };
 
