@@ -247,7 +247,7 @@
           zoom: {{ $ctrl.MockCanvas.camera.zoom | number:2 }}
         </div>
         <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect_all()">
-          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0, minimized: $ctrl.MockCanvas.camera.zoom < 0.15 }"></mock>
+          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-zoom="$ctrl.MockCanvas.camera.zoom" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0, minimized: $ctrl.MockCanvas.camera.zoom < 0.15 }"></mock>
           <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
             <h3>No mocks found...</h3>
           </div>
@@ -541,11 +541,11 @@
 
   gallery.component('mock', {
 
-    bindings: { mock: '<', delete: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag' },
+    bindings: { mock: '<', delete: '<', on_delete: '<onDelete', edit: '<', on_drag: '<onDrag', zoom: '<?' },
     template: `
     
       <div class="mock_container" data-ng-class="{ empty: !$ctrl.mock.url }">
-        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock.url }}" data-ng-onload="$ctrl.loaded = true;" alt="" data-ng-class="{ visible: $ctrl.loaded }">
+        <img data-ng-show="$ctrl.mock.url" style="width: 100%;" data-ng-src="{{ $ctrl.mock | mock_image_url:$ctrl.zoom }}" data-ng-onload="$ctrl.loaded = true;" alt="" data-ng-class="{ visible: $ctrl.loaded }">
         <div class="mock_coord top left" data-ng-if="$ctrl.edit">
           x: {{ $ctrl.mock.x }}, y: {{ $ctrl.mock.y }} <br>
           w: {{ $ctrl.mock.width || 0 }}, h: {{ $ctrl.mock.height || 0 }}
@@ -831,6 +831,74 @@
 
       }
     }
+  });
+
+  gallery.filter('mock_image_url', function () {
+
+    const IMAGE_SCALES = [
+      {
+        dir: '09x',
+        scale: 0.9
+      },
+      {
+        dir: '08x',
+        scale: 0.8
+      },
+      {
+        dir: '07x',
+        scale: 0.7
+      },
+      {
+        dir: '06x',
+        scale: 0.6
+      },
+      {
+        dir: '05x',
+        scale: 0.5
+      },
+      {
+        dir: '04x',
+        scale: 0.4
+      },
+      {
+        dir: '03x',
+        scale: 0.3
+      },
+      {
+        dir: '02x',
+        scale: 0.2
+      },
+      {
+        dir: '01x',
+        scale: 0.1
+      },
+      {
+        dir: '005x',
+        scale: 0.05
+      },
+      {
+        dir: '002x',
+        scale: 0.02
+      }
+    ];
+
+    return function (mock, zoom) {
+
+      let current_scale = IMAGE_SCALES.filter(scale => scale.scale > zoom).sort((a, b) => {
+        return b.scale - a.scale;
+      }).pop() || {
+
+        dir: '1x',
+        scale: 1
+
+      };
+
+      let image_extension = mock.url.split('.').pop();
+
+      return `/media/mocks/${ current_scale.dir }/${ mock._id }.${image_extension}`;
+
+    };
+
   });
 
   document.addEventListener('DOMContentLoaded', () => {

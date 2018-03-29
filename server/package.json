@@ -16,6 +16,8 @@
     "express": "^4.15.4",
     "express-es6-template-engine": "^2.0.1",
     "express-session": "^1.15.5",
-    "mongoose": "^4.11.9"
+    "jimp": "^0.2.28",
+    "mongoose": "^4.11.9",
+    "request": "^2.85.0"
   }
 }

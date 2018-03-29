@@ -1,5 +1,6 @@
 # local configs
 server/config/local.json
+/media
 
 .idea
 node_modules

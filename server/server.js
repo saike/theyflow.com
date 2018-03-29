@@ -38,7 +38,8 @@ app.set('views', path.join(__dirname, '..', 'client'));
 app.set('view engine', 'html');
 
 //static server
-app.use(express.static(path.join(__dirname, '..', 'client')));
+app.use('/', express.static(path.join(__dirname, '..', 'client')));
+app.use('/media', express.static(path.join(__dirname, '..', 'media')));
 
 //request parsers
 app.use(body_parser.json());
