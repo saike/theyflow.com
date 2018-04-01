@@ -41,7 +41,17 @@ mongoose.connect([ CONFIG.MONGODB.HOST, CONFIG.MONGODB.DATABASE_NAME ].join('/')
 
     console.log(mocks);
 
-    download_mocks(mocks);
+    download_mocks(mocks).then(() => {
+
+      console.log('DOWNLOADING COMPLETE');
+      // process.exit();
+
+    }, (err) => {
+
+      console.log('DOWNLOADING ERROR', err);
+      // process.exit()
+
+    });
 
   }, (err) => {
     console.error(err);
@@ -59,7 +69,19 @@ const download_mocks = (mocks) => {
 
       console.log(`Migrated: ${current}/${mocks.length}`);
 
-      download_mock(mocks[current]).then(() => {
+      if(current >= mocks.length) {
+        resolve('DOWNLOADING COMPLETE');
+      }
+
+      if(!mocks[current]) {
+        reject({
+          status: 'error',
+          index: current,
+          mock: mocks[current]
+        });
+      }
+
+      mocks[current].download_mock().then(() => {
 
         if(current < mocks.length) {
 
@@ -70,7 +92,7 @@ const download_mocks = (mocks) => {
         }
         else {
 
-          console.log('DOWNLOADING COMPLETE');
+          resolve('DOWNLOADING COMPLETE');
 
         }
 
@@ -85,7 +107,7 @@ const download_mocks = (mocks) => {
         }
         else {
 
-          console.log('DOWNLOADING COMPLETE');
+          resolve('DOWNLOADING COMPLETE');
 
         }
 
@@ -93,84 +115,6 @@ const download_mocks = (mocks) => {
     };
 
     download();
-
-  });
-
-};
-
-
-const download_mock = (mock) => {
-
-  return new Promise((resolve, reject) => {
-
-    console.log(`Mock download start: ${mock.id}`);
-
-    request.head(mock.url, function(err, res, body){
-      // console.log('content-type:', res.headers['content-type']);
-      // console.log('content-length:', res.headers['content-length']);
-
-      // console.log(body);
-
-      // let re = /(?:\.([^.]+))?$/;
-
-      if(err) {
-
-        reject(err);
-        return;
-
-      }
-
-      let file_name = path.join(__dirname, '..', 'media', 'mocks', '1x', `${mock._id}.png`);
-
-      if(fs.existsSync(file_name)) {
-
-        make_thumbs(mock, file_name);
-
-      }
-      else {
-        request(mock.url).pipe(fs.createWriteStream(file_name)).on('close', () => {
-          console.warn(`Mock download finish: ${mock.id}`);
-
-          make_thumbs(mock, file_name);
-
-          resolve(mock);
-        });
-      }
-
-
-    });
-
-  });
-
-
-};
-
-const make_thumbs = (mock, file_name) => {
-
-  jimp.read(file_name, (err, image) => {
-
-    if (err) {
-
-      console.error(`Cannot read image: ${file_name}`);
-      return;
-
-    }
-
-    // console.log(image.bitmap.width);
-
-    IMAGE_SCALES.forEach((scale) => {
-
-      let resized_file_name = path.join(__dirname, '..', 'media', 'mocks', scale.dir, `${mock._id}.png`);
-
-      // console.log(scale.scale);
-
-      let clone = image.clone();
-
-      clone.resize(image.bitmap.width * parseFloat(scale.scale), jimp.AUTO).write(resized_file_name);
-
-
-
-    });
 
   });
 

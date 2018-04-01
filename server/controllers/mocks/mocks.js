@@ -33,6 +33,8 @@ export const create = async (req, res, next) => {
 
     mock = await Mock.create(req.body);
 
+    await mock.download_mock();
+
   } catch ({message}) {
 
     return next({
@@ -87,7 +89,11 @@ export const remove = async (req, res, next) => {
 
   try {
 
-    mock = await Mock.remove({_id: req.params.id});
+    mock = await Mock.findOne({_id: req.params.id});
+
+    mock.delete_media();
+
+    mock.remove();
 
   } catch ({message}) {
 
@@ -97,6 +103,7 @@ export const remove = async (req, res, next) => {
     });
 
   }
+
 
   res.json({
     status: 200,
