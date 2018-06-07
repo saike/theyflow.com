@@ -31,6 +31,15 @@
 
   });
 
+  gallery.service('Konva', function ($window) {
+
+
+    console.log($window);
+
+    return $window.Konva;
+
+  });
+
   gallery.component('gallery', {
     template: `
       <div>
@@ -53,113 +62,134 @@
         <div class="mock_canvas">
           <mock-canvas data-mock-canvas="$ctrl.MockCanvas" data-delete="$ctrl.delete.enabled" data-edit="$ctrl.auth.authorized"></mock-canvas>
         </div>  
+        <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
       </div>
     `,
-    controller: function (Mock, AuthAPI, MockCanvas, $window, $stateParams, $timeout) {
+    controller: function (Mock, AuthAPI, MockCanvas, $window, $stateParams) {
 
-      this.auth = AuthAPI;
-
-      this.MockCanvas = new MockCanvas();
-
-      this.$onInit = () => {
-
-        this.MockCanvas.camera.zoom = parseFloat($stateParams.zoom) || 0.02 || $window.innerWidth/6/1000;
-
-        this.MockCanvas.camera.x = parseFloat($stateParams.x) || 331.43;
-        this.MockCanvas.camera.y = parseFloat($stateParams.y) || 10447.14;
-
-        Mock.list().then((mocks) => {
-
-          this.MockCanvas.mocks = mocks;
-          console.dir(mocks);
-
-        });
-
-      };
-
-      this.validate_url = function(url) {
-        return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(url);
-      };
-
-      this.wizard = {
-        show: false,
-        current: false,
-        open: () => {
-          this.wizard.show = true;
-          let mock = new Mock();
-          mock.x = this.MockCanvas.camera.x - 500;
-          mock.y = this.MockCanvas.camera.y;
-          this.wizard.current = mock;
-        },
-        create: () => {
-          if(!this.validate_url(this.wizard.current.url)) {
-
-            let result = this.wizard.current.url.split('[img]')[1];
-            result = result.split('[/img]')[0];
-            if(result) {
-              this.wizard.current.url = result;
-            }
-            else {
-              return;
-            }
-            console.dir(this.wizard.current.url);
-            // alert('BAD URL!');
-          }
-          this.wizard.current.save().then((res) => {
-            this.MockCanvas.mocks.push(this.wizard.current);
-            this.wizard.cancel();
-          });
-        },
-        cancel: () => {
-          this.wizard.show = false;
-          this.wizard.current = false;
-        }
-      };
-
-      this.calculate_size = () => {
-
-        for(let mock of this.MockCanvas.mocks) {
-
-          if(mock.width && mock.height) continue;
-
-          let mock_image = new Image();
-
-          mock_image.src = mock.url;
-
-          mock_image.onload = () => {
-
-            mock.width = mock_image.naturalWidth;
-            mock.height = mock_image.naturalHeight;
-            mock.save();
-
-          };
-
-        }
-
-      };
-
-      this.delete = {
-        enabled: false
-      };
+      // this.auth = AuthAPI;
+      //
+      // this.MockCanvas = new MockCanvas();
+      //
+      // this.$onInit = () => {
+      //
+      //   this.MockCanvas.camera.zoom = parseFloat($stateParams.zoom) || 0.02 || $window.innerWidth/6/1000;
+      //
+      //   this.MockCanvas.camera.x = parseFloat($stateParams.x) || 331.43;
+      //   this.MockCanvas.camera.y = parseFloat($stateParams.y) || 10447.14;
+      //
+      //   Mock.list().then((mocks) => {
+      //
+      //     this.MockCanvas.mocks = mocks;
+      //     console.dir(mocks);
+      //
+      //   });
+      //
+      // };
+      //
+      // this.validate_url = function(url) {
+      //   return /^(?:(?:(?:https?|ftp):)?\/\/)(?:\S+(?::\S*)?@)?(?:(?!(?:10|127)(?:\.\d{1,3}){3})(?!(?:169\.254|192\.168)(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|(?:(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)(?:\.(?:[a-z\u00a1-\uffff0-9]-*)*[a-z\u00a1-\uffff0-9]+)*(?:\.(?:[a-z\u00a1-\uffff]{2,})))(?::\d{2,5})?(?:[/?#]\S*)?$/i.test(url);
+      // };
+      //
+      // this.wizard = {
+      //   show: false,
+      //   current: false,
+      //   open: () => {
+      //     this.wizard.show = true;
+      //     let mock = new Mock();
+      //     mock.x = this.MockCanvas.camera.x - 500;
+      //     mock.y = this.MockCanvas.camera.y;
+      //     this.wizard.current = mock;
+      //   },
+      //   create: () => {
+      //     if(!this.validate_url(this.wizard.current.url)) {
+      //
+      //       let result = this.wizard.current.url.split('[img]')[1];
+      //       result = result.split('[/img]')[0];
+      //       if(result) {
+      //         this.wizard.current.url = result;
+      //       }
+      //       else {
+      //         return;
+      //       }
+      //       console.dir(this.wizard.current.url);
+      //       // alert('BAD URL!');
+      //     }
+      //     this.wizard.current.save().then((res) => {
+      //       this.MockCanvas.mocks.push(this.wizard.current);
+      //       this.wizard.cancel();
+      //     });
+      //   },
+      //   cancel: () => {
+      //     this.wizard.show = false;
+      //     this.wizard.current = false;
+      //   }
+      // };
+      //
+      // this.calculate_size = () => {
+      //
+      //   for(let mock of this.MockCanvas.mocks) {
+      //
+      //     if(mock.width && mock.height) continue;
+      //
+      //     let mock_image = new Image();
+      //
+      //     mock_image.src = mock.url;
+      //
+      //     mock_image.onload = () => {
+      //
+      //       mock.width = mock_image.naturalWidth;
+      //       mock.height = mock_image.naturalHeight;
+      //       mock.save();
+      //
+      //     };
+      //
+      //   }
+      //
+      // };
+      //
+      // this.delete = {
+      //   enabled: false
+      // };
 
     }
   });
 
-  gallery.service('MockCanvas', function () {
+  gallery.service('MockCanvas', function (Konva, Mock, $filter) {
     return class MockCanvas {
 
-      constructor(){
+      constructor(elm, width, height){
 
         this.mocks = [];
 
+        this.screen = elm;
+
+        this.stage = new Konva.Stage({
+          container: this.screen,
+          width: width,
+          height: height,
+          draggable: true
+        });
+
+        let mock_layer = new Konva.Layer({
+          id: 'mock_layer'
+        });
+
+        this.stage.add(mock_layer);
+
+
         this.camera = {
-          zoom: 0.02,
+          zoom: 0.05,
           x: 0,
           y: 0,
           width: 1440,
           height: 900,
           move: false
         };
+
+        this.stage.scale({ x: this.camera.zoom, y: this.camera.zoom });
+
+        console.log(this.stage);
 
         this.element = false;
 
@@ -179,6 +209,18 @@
         // console.dir(visible);
 
         return visible;
+
+      }
+      bounding_box(){
+
+        return {
+          left: Math.min(...this.mocks.map(mock => mock.x)) < 0 ? Math.min(...this.mocks.map(mock => mock.x)) : 0,
+          top: Math.min(...this.mocks.map(mock => mock.y)) < 0 ? Math.min(...this.mocks.map(mock => mock.y)) : 0,
+          right: Math.max(...this.mocks.map(mock => mock.x)),
+          bottom: Math.max(...this.mocks.map(mock => mock.y)),
+          x: (Math.abs(Math.min(...this.mocks.map(mock => mock.x))) + Math.max(...this.mocks.map(mock => mock.x)))/2,
+          y: (Math.abs(Math.min(...this.mocks.map(mock => mock.y))) + Math.max(...this.mocks.map(mock => mock.y)))/2
+        }
 
       }
       reflow(elm) {
@@ -220,14 +262,62 @@
       }
       render(){
 
-
+        this.stage.draw();
 
       }
-      set_viewport(elm){
+      load_mocks(){
 
-        if(elm) {
-          this.element = elm;
-        }
+        return Mock.list().then((mocks) => {
+
+          this.mocks = mocks;
+
+          console.dir(mocks);
+
+          let bounding_box = this.bounding_box();
+
+          let mock_layer = this.stage.findOne('#mock_layer');
+          console.log(mock_layer);
+
+          this.stage.offsetX(bounding_box.x);
+          this.stage.offsetY(bounding_box.y);
+
+          mocks.forEach((mock) => {
+
+            let img = new Image();
+
+            img.onload = () => {
+
+              let image = new Konva.Image({
+                x: mock.x - bounding_box.left,
+                y: mock.y - bounding_box.top,
+                image: img,
+                width: mock.width,
+                height: mock.height,
+                id: mock.id
+              });
+
+              console.log(image);
+
+              mock_layer.add(image);
+
+              this.render();
+
+            };
+
+            img.src = $filter('mock_image_url')(mock, this.camera.zoom);
+
+            console.log(img.src);
+
+            // add the shape to the layer
+
+          });
+
+
+          console.log(bounding_box);
+
+          return mocks;
+
+        });
 
       }
 
@@ -236,7 +326,7 @@
 
   gallery.component('mockCanvas', {
 
-    bindings: { MockCanvas: '<mockCanvas', edit: '<', delete: '<' },
+    bindings: { edit: '<', delete: '<' },
     template:
       `  
         <div class="canvas_logger" data-ng-if="$ctrl.logger.show">
@@ -246,25 +336,23 @@
           y: {{ $ctrl.MockCanvas.camera.y | number:2 }},
           zoom: {{ $ctrl.MockCanvas.camera.zoom | number:2 }}
         </div>
-        <div class="mock_canvas_background"  data-overlay-click="$ctrl.selector.deselect_all()">
-          <mock data-ng-repeat="mock in $ctrl.MockCanvas.visible_mocks()" data-edit="$ctrl.edit" data-mock="mock" data-zoom="$ctrl.MockCanvas.camera.zoom" data-on-delete="$ctrl.remove_mock" data-delete="$ctrl.delete" data-on-drag="$ctrl.drag_mock" data-ng-style="$ctrl.MockCanvas.mock_position(mock)" data-ng-mousedown="$ctrl.selector.select(mock, $event)" data-ng-mouseup="$ctrl.selector.deselect(mock, $event)" data-ng-class="{ selected: $ctrl.selector.selected.indexOf(mock) >=0, minimized: $ctrl.MockCanvas.camera.zoom < 0.15 }"></mock>
-          <div data-ng-if="$ctrl.MockCanvas.mocks.length < 1" class="empty_mocks_overlay">
-            <h3>No mocks found...</h3>
-          </div>
-          <mock-preview data-mock="$ctrl.selector.preview" data-ng-if="$ctrl.selector.preview" data-overlay-click="$ctrl.selector.preview = false;"></mock-preview>
+        <div class="mock_canvas_background">
+          <div class="mock_canvas_viewport"></div>
         </div>
       `,
-    controller($element, $window, $scope, $interval, $timeout){
+    controller($element, $window, $scope, $interval, $timeout, MockCanvas, Mock){
 
       this.$onChanges = (changes) => {
 
         // console.dir(changes);
 
-        if(this.MockCanvas) {
+        if(this.canvas) {
 
-          this.MockCanvas.set_viewport($element[0]);
+          this.MockCanvas = new MockCanvas(this.canvas, this.canvas.offsetWidth, this.canvas.offsetHeight);
 
-          this.MockCanvas.reflow();
+          this.MockCanvas.load_mocks();
+
+          // this.MockCanvas.reflow();
 
           // console.log('reflow', this.MockCanvas.camera.zoom);
 
@@ -274,6 +362,13 @@
       this.$onInit = () => {
 
         //camera movement events
+        this.canvas = $element[0].querySelector('.mock_canvas_viewport');
+
+        // console.log(this.canvas);
+
+        this.MockCanvas = new MockCanvas(this.canvas, this.canvas.offsetWidth, this.canvas.offsetHeight);
+
+        this.MockCanvas.load_mocks();
 
         $element[0].addEventListener('contextmenu', (event) => {
           event.preventDefault();
