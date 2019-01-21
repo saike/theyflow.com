@@ -191,7 +191,7 @@
 
         console.log(this.stage);
 
-        this.element = false;
+        this.bind_events();
 
       }
       visible_mocks(){
@@ -276,10 +276,12 @@
           let bounding_box = this.bounding_box();
 
           let mock_layer = this.stage.findOne('#mock_layer');
-          console.log(mock_layer);
 
-          this.stage.offsetX(bounding_box.x);
-          this.stage.offsetY(bounding_box.y);
+          this.stage.x(bounding_box.x);
+          this.stage.y(bounding_box.y);
+          this.stage.width(bounding_box.right);
+          this.stage.height(bounding_box.bottom);
+          console.log(this.stage);
 
           mocks.forEach((mock) => {
 
@@ -296,7 +298,7 @@
                 id: mock.id
               });
 
-              console.log(image);
+              // console.log(image);
 
               mock_layer.add(image);
 
@@ -306,7 +308,7 @@
 
             img.src = $filter('mock_image_url')(mock, this.camera.zoom);
 
-            console.log(img.src);
+            // console.log(img.src);
 
             // add the shape to the layer
 
@@ -317,6 +319,55 @@
 
           return mocks;
 
+        });
+
+      }
+      bind_events(){
+
+        this.stage.on('wheel', (conva_event) => {
+
+          let event = conva_event.evt;
+
+          console.log(this.stage.getPointerPosition());
+
+          event.preventDefault();
+
+          let mousex = this.stage.getPointerPosition().x;
+          let mousey = this.stage.getPointerPosition().y;
+          // Normalize wheel to +1 or -1.
+          let wheel = event.wheelDelta/120;
+
+          // Compute zoom factor.
+          let zoom = Math.exp(wheel*0.2);
+
+          let new_zoom = this.camera.zoom * zoom;
+
+          if(new_zoom <= 0.02 || new_zoom >= 2) {
+            return;
+          }
+
+          this.camera.x = this.stage.x();
+          this.camera.y = this.stage.y();
+
+          console.log(this.camera);
+
+          this.camera.x -= mousex/(this.camera.zoom*zoom) - mousex/this.camera.zoom;
+          this.camera.y -= mousey/(this.camera.zoom*zoom) - mousey/this.camera.zoom;
+
+          this.camera.zoom = new_zoom;
+
+          this.stage.scale({ x: this.camera.zoom, y: this.camera.zoom });
+          this.stage.x(this.camera.x);
+          this.stage.y(this.camera.y);
+          console.log(this.camera.zoom);
+
+          this.render();
+          // console.log(event);
+          // console.log(this.MockCanvas.camera);
+        });
+
+        this.stage.on('dragmove', (e) => {
+          console.log(e);
         });
 
       }
@@ -402,34 +453,7 @@
           $scope.$digest();
         });
 
-        $element[0].addEventListener('wheel', (event) => {
-          event.preventDefault();
 
-          let mousex = event.clientX - $element[0].offsetLeft - $element[0].offsetWidth/2;
-          let mousey = event.clientY - $element[0].offsetTop - $element[0].offsetHeight/2;
-          // Normalize wheel to +1 or -1.
-          let wheel = event.wheelDelta/120;
-
-          // Compute zoom factor.
-          let zoom = Math.exp(wheel*0.2);
-
-          let new_zoom = this.MockCanvas.camera.zoom * zoom;
-
-          if(new_zoom <= 0.02 || new_zoom >= 2) {
-            return;
-          }
-
-          this.MockCanvas.camera.x -= mousex/(this.MockCanvas.camera.zoom*zoom) - mousex/this.MockCanvas.camera.zoom;
-          this.MockCanvas.camera.y -= mousey/(this.MockCanvas.camera.zoom*zoom) - mousey/this.MockCanvas.camera.zoom;
-
-          this.MockCanvas.camera.zoom = new_zoom;
-
-          this.MockCanvas.reflow();
-
-          $scope.$apply();
-          // console.log(event);
-          // console.log(this.MockCanvas.camera);
-        });
 
         let camera_move = [ false, false, false, false ];
 

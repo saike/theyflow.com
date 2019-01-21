@@ -2,7 +2,7 @@ import express from 'express';
 import path from 'path';
 
 //config
-import CONFIG from './config';
+import CONFIG from '../config';
 
 //utils
 import body_parser from 'body-parser';
@@ -24,11 +24,16 @@ import AuthRoutes from './routes/auth';
 const app = express();
 
 //connect to database
-mongoose.connect([ CONFIG.MONGODB.HOST, CONFIG.MONGODB.DATABASE_NAME ].join('/'), (err) => {
+mongoose.Promise = Promise;
+mongoose.connect([ CONFIG.MONGODB.HOST, CONFIG.MONGODB.DATABASE_NAME ].join('/'), { useMongoClient: true }).then((res) => {
+
+  console.log('mongo connected');
+
+}, (err) => {
 
   if(err) throw err;
 
-  console.log('mongo connected');
+  console.log('mongo error', err);
 
 });
 
