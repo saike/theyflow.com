@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import CONFIG from './config';
+import CONFIG from '../config';
 import Mock from './models/mock';
 import fs from 'fs';
 import request from 'request';

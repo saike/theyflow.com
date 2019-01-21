@@ -1,0 +1,14 @@
+{
+
+  "DOMAIN": "theyflow.com",
+  "PROTOCOL": "http",
+  "PORT": 3000,
+  "SECRET": "kishkoglot",
+  "PASSWORD": "*LXGQ@w5MZ_Aa$8!RBW2WSGhZHz?m7%k",
+  "MONGODB": {
+    "HOST": "mongodb://localhost",
+    "DATABASE_NAME": "theyflow",
+    "PORT": 27017
+  }
+
+}

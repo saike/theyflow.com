@@ -28,6 +28,7 @@
     ]
   },
   "dependencies": {
+    "mongoose": "^5.4.5",
     "pm2": "latest"
   }
 }
