@@ -155,7 +155,7 @@
     }
   });
 
-  gallery.service('MockCanvas', function (Konva, Mock, $filter, $rootScope) {
+  gallery.service('MockCanvas', function (Konva, Mock, $filter, $rootScope, $timeout, $interval) {
     return class MockCanvas {
 
       constructor(elm, width, height){
@@ -198,9 +198,11 @@
 
         let viewport = this.viewport();
 
+        let bounding_box = this.bounding_box();
+
         let visible = this.mocks.filter((mock) => {
 
-          let outside = mock.x + 1000 < viewport.left || mock.x > viewport.right || mock.y > viewport.bottom || mock.y < viewport.top - (mock.height * 1000/mock.width);
+          let outside = mock.x + Math.abs(bounding_box.left) + 1000 < viewport.left || mock.x + Math.abs(bounding_box.left) > viewport.right || mock.y + Math.abs(bounding_box.top) > viewport.bottom || mock.y + Math.abs(bounding_box.top) < viewport.top - (mock.height * 1000/mock.width);
 
           return !outside;
 
@@ -239,13 +241,12 @@
       }
       viewport(){
 
-        let bounding_box = this.bounding_box();
 
         return {
-          left: this.camera.x/this.camera.zoom+Math.abs(bounding_box.left),
-          top: this.camera.y/this.camera.zoom+Math.abs(bounding_box.top),
-          right: (this.camera.x + this.stage.attrs.width)/this.camera.zoom+Math.abs(bounding_box.left),
-          bottom: (this.camera.y + this.stage.attrs.height)/this.camera.zoom+Math.abs(bounding_box.top)
+          left: parseInt(Math.abs(this.camera.x)/this.camera.zoom),
+          top: parseInt(Math.abs(this.camera.y)/this.camera.zoom),
+          right: parseInt((Math.abs(this.camera.x) + this.stage.attrs.width)/this.camera.zoom),
+          bottom: parseInt((Math.abs(this.camera.y) + this.stage.attrs.height)/this.camera.zoom)
         };
 
       }
@@ -315,7 +316,7 @@
           });
 
 
-          console.log(bounding_box);
+          // console.log(bounding_box);
 
           return mocks;
 
@@ -323,6 +324,12 @@
 
       }
       bind_events(){
+
+        let force_rerender = $interval(() => {
+          this.render();
+        }, 2000);
+
+        let scaling = false;
 
         this.stage.on('wheel', (conva_event) => {
 
@@ -372,28 +379,39 @@
 
           this.camera.zoom = new_zoom;
 
-          // let visible_mocks = this.visible_mocks();
-          //
-          // console.log(this.viewport());
-          // console.log(visible_mocks);
-          //
-          // visible_mocks.forEach((mock) => {
-          //
-          //   mock.render(this.bounding_box(), this.camera.zoom).then(() => {
-          //
-          //     this.render();
-          //
-          //   });
-          //
-          // });
+          $rootScope.$digest();
+
+          if(scaling) return;
+
+          scaling = true;
+
+          $timeout(() => {
+
+            let visible_mocks = this.visible_mocks();
+
+            // console.log(this.viewport());
+            // console.log(visible_mocks);
+
+            visible_mocks.forEach((mock) => {
+
+              mock.render(this.bounding_box(), this.camera.zoom);
+
+            });
+
+            scaling = false;
+
+          }, 4000);
+
+
 
           // console.log(this.camera.zoom);
-          $rootScope.$digest();
 
           // this.render();
           // console.log(event);
           // console.log(this.MockCanvas.camera);
         });
+
+        let moving = false;
 
         this.stage.on('dragmove', (e) => {
 
@@ -401,6 +419,27 @@
           this.camera.y = this.stage.y();
 
           $rootScope.$digest();
+
+          if(moving) return;
+
+          moving = true;
+
+          $timeout(() => {
+
+            let visible_mocks = this.visible_mocks();
+            //
+            // console.log(this.viewport());
+            // console.log(visible_mocks);
+
+            visible_mocks.forEach((mock) => {
+
+              mock.render(this.bounding_box(), this.camera.zoom);
+
+            });
+
+            moving = false;
+
+          }, 4000);
 
         });
 
@@ -420,6 +459,12 @@
           x: {{ $ctrl.MockCanvas.camera.x | number:2 }},
           y: {{ $ctrl.MockCanvas.camera.y | number:2 }},
           zoom: {{ $ctrl.MockCanvas.camera.zoom | number:2 }}
+          <br>
+          viewport: 
+          left: {{ $ctrl.MockCanvas.viewport().left }}
+          right: {{ $ctrl.MockCanvas.viewport().right }}
+          top: {{ $ctrl.MockCanvas.viewport().top }}
+          bottom: {{ $ctrl.MockCanvas.viewport().bottom }}
         </div>
         <div class="mock_canvas_background">
           <div class="mock_canvas_viewport"></div>
@@ -972,7 +1017,7 @@
         let old_src = this.image && this.image.image().src;
         let new_src = $filter('mock_image_url')(this, scale);
 
-        console.log(old_src, new_src);
+        // console.log(old_src && old_src.split('/media/mocks/')[1], new_src.split('/media/mocks/')[1]);
 
         return new Promise((resolve, reject) => {
 
@@ -995,18 +1040,26 @@
 
             };
 
+            img.onerror = () => {
+
+              reject(this);
+
+            };
+
             img.src = new_src;
 
           }
-          else if(old_src !== new_src) {
+          else if(old_src.split('/media/mocks/')[1] !== new_src.split('/media/mocks/')[1]) {
 
-            let new_image = new Image();
+            let image = this.image.image();
 
-            new_image.onload = function() {
-              this.image && this.image.image(new_image);
+            image.src = new_src;
+
+            image.onerror = () => {
+
+              image.src = old_src;
+
             };
-
-            new_image.src = new_src;
 
 
           }
