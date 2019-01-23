@@ -155,7 +155,7 @@
     }
   });
 
-  gallery.service('MockCanvas', function (Konva, Mock, $filter) {
+  gallery.service('MockCanvas', function (Konva, Mock, $filter, $rootScope) {
     return class MockCanvas {
 
       constructor(elm, width, height){
@@ -225,13 +225,13 @@
       }
       reflow(elm) {
 
-        elm = elm || this.element;
+        // elm = elm || this.element;
 
-        let elm_width =  elm.offsetWidth || elm.innerWidth || 0;
-        let elm_height = elm.offsetHeight || elm.innerHeight || 0;
+        // let elm_width =  elm.offsetWidth || elm.innerWidth || 0;
+        // let elm_height = elm.offsetHeight || elm.innerHeight || 0;
 
-        this.camera.width = elm_width/this.camera.zoom;
-        this.camera.height = elm_height/this.camera.zoom;
+        this.camera.width = this.stage.width/this.camera.zoom;
+        this.camera.height = this.stage.height/this.camera.zoom;
 
         // console.log(this.camera.x, this.camera.y, this.camera.width, this.camera.height, this.camera.zoom);
         // console.dir(elm);
@@ -239,11 +239,13 @@
       }
       viewport(){
 
+        let bounding_box = this.bounding_box();
+
         return {
-          left: this.camera.x - (this.camera.width/2),
-          top: this.camera.y - (this.camera.height/2),
-          right: this.camera.x + (this.camera.width/2),
-          bottom: this.camera.y + (this.camera.height/2)
+          left: this.camera.x/this.camera.zoom+Math.abs(bounding_box.left),
+          top: this.camera.y/this.camera.zoom+Math.abs(bounding_box.top),
+          right: (this.camera.x + this.stage.attrs.width)/this.camera.zoom+Math.abs(bounding_box.left),
+          bottom: (this.camera.y + this.stage.attrs.height)/this.camera.zoom+Math.abs(bounding_box.top)
         };
 
       }
@@ -277,36 +279,34 @@
 
           let mock_layer = this.stage.findOne('#mock_layer');
 
-          this.stage.x(bounding_box.x);
-          this.stage.y(bounding_box.y);
-          this.stage.width(bounding_box.right);
-          this.stage.height(bounding_box.bottom);
+          this.stage.x(0);
+          this.stage.y(0);
+
+          let initial_zoom = Math.min(this.stage.width()/(Math.abs(bounding_box.right) + Math.abs(bounding_box.left)), this.stage.height()/(Math.abs(bounding_box.top) + Math.abs(bounding_box.bottom)));
+
+          this.stage.scale({
+            x: initial_zoom,
+            y: initial_zoom
+          });
+
+          this.camera.x = 0;
+          this.camera.y = 0;
+          this.camera.zoom = initial_zoom;
+          // this.stage.width(bounding_box.right);
+          // this.stage.height(bounding_box.bottom);
           console.log(this.stage);
 
           mocks.forEach((mock) => {
 
-            let img = new Image();
+            mock.render(bounding_box, this.camera.zoom).then((mock) => {
 
-            img.onload = () => {
+              // console.log(mock.image.image());
 
-              let image = new Konva.Image({
-                x: mock.x - bounding_box.left,
-                y: mock.y - bounding_box.top,
-                image: img,
-                width: mock.width,
-                height: mock.height,
-                id: mock.id
-              });
-
-              // console.log(image);
-
-              mock_layer.add(image);
+              mock_layer.add(mock.image);
 
               this.render();
 
-            };
-
-            img.src = $filter('mock_image_url')(mock, this.camera.zoom);
+            });
 
             // console.log(img.src);
 
@@ -328,46 +328,80 @@
 
           let event = conva_event.evt;
 
-          console.log(this.stage.getPointerPosition());
+          // console.log(this.stage.getPointerPosition());
 
           event.preventDefault();
 
-          let mousex = this.stage.getPointerPosition().x;
-          let mousey = this.stage.getPointerPosition().y;
-          // Normalize wheel to +1 or -1.
           let wheel = event.wheelDelta/120;
 
           // Compute zoom factor.
           let zoom = Math.exp(wheel*0.2);
 
-          let new_zoom = this.camera.zoom * zoom;
+          let old_zoom = this.stage.scaleX();
 
-          if(new_zoom <= 0.02 || new_zoom >= 2) {
-            return;
+          let new_zoom = old_zoom * zoom;
+
+          if(new_zoom < 0.02) {
+
+            new_zoom = 0.02;
+
+          }
+          if(new_zoom > 2) {
+
+            new_zoom = 2;
+
           }
 
-          this.camera.x = this.stage.x();
-          this.camera.y = this.stage.y();
+          let mouse_point_to = {
+            x: this.stage.getPointerPosition().x / old_zoom - this.stage.x() / old_zoom,
+            y: this.stage.getPointerPosition().y / old_zoom - this.stage.y() / old_zoom,
+          };
 
-          console.log(this.camera);
+          this.stage.scale({ x: new_zoom, y: new_zoom });
 
-          this.camera.x -= mousex/(this.camera.zoom*zoom) - mousex/this.camera.zoom;
-          this.camera.y -= mousey/(this.camera.zoom*zoom) - mousey/this.camera.zoom;
+          let new_position = {
+            x: -(mouse_point_to.x - this.stage.getPointerPosition().x / new_zoom) * new_zoom,
+            y: -(mouse_point_to.y - this.stage.getPointerPosition().y / new_zoom) * new_zoom
+          };
+
+          this.stage.position(new_position);
+          this.stage.batchDraw();
+
+          this.camera.x = new_position.x;
+          this.camera.y = new_position.y;
 
           this.camera.zoom = new_zoom;
 
-          this.stage.scale({ x: this.camera.zoom, y: this.camera.zoom });
-          this.stage.x(this.camera.x);
-          this.stage.y(this.camera.y);
-          console.log(this.camera.zoom);
+          // let visible_mocks = this.visible_mocks();
+          //
+          // console.log(this.viewport());
+          // console.log(visible_mocks);
+          //
+          // visible_mocks.forEach((mock) => {
+          //
+          //   mock.render(this.bounding_box(), this.camera.zoom).then(() => {
+          //
+          //     this.render();
+          //
+          //   });
+          //
+          // });
 
-          this.render();
+          // console.log(this.camera.zoom);
+          $rootScope.$digest();
+
+          // this.render();
           // console.log(event);
           // console.log(this.MockCanvas.camera);
         });
 
         this.stage.on('dragmove', (e) => {
-          console.log(e);
+
+          this.camera.x = this.stage.x();
+          this.camera.y = this.stage.y();
+
+          $rootScope.$digest();
+
         });
 
       }
@@ -434,7 +468,7 @@
           if(!this.MockCanvas.camera.move) return;
           let directionX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
           let directionY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-          // console.dir(directionX, directionY);
+          console.dir(directionX, directionY);
           this.MockCanvas.camera.x -= (directionX/this.MockCanvas.camera.zoom);
           this.MockCanvas.camera.y -= (directionY/this.MockCanvas.camera.zoom);
           $scope.$digest();
@@ -901,12 +935,14 @@
 
   });
 
-  gallery.service('Mock', function ($http) {
+  gallery.service('Mock', function ($http, Konva, $filter) {
     return class Mock{
 
       constructor(data){
 
         Object.assign(this, data);
+
+        this.image = false;
 
       }
       save(){
@@ -930,6 +966,60 @@
         return $http.get('/mocks').then((res) => {
           return res.data.map(mock => new Mock(mock));
         });
+      }
+      render(bounding_box, scale){
+
+        let old_src = this.image && this.image.image().src;
+        let new_src = $filter('mock_image_url')(this, scale);
+
+        console.log(old_src, new_src);
+
+        return new Promise((resolve, reject) => {
+
+          if(!old_src) {
+
+            let img = new Image();
+
+            img.onload = () => {
+
+              this.image = new Konva.Image({
+                x: this.x - bounding_box.left,
+                y: this.y - bounding_box.top,
+                image: img,
+                width: 1000,
+                height: 1000*(this.height/this.width)
+              });
+              // console.log(mock._id, image);
+
+              resolve(this);
+
+            };
+
+            img.src = new_src;
+
+          }
+          else if(old_src !== new_src) {
+
+            let new_image = new Image();
+
+            new_image.onload = function() {
+              this.image && this.image.image(new_image);
+            };
+
+            new_image.src = new_src;
+
+
+          }
+          else {
+
+            reject(this);
+
+          }
+
+        });
+
+
+
       }
 
     }
