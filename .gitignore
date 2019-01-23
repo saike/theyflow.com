@@ -1,5 +1,5 @@
 # local configs
-server/config/local.json
+config/local.json
 /media
 
 .idea
