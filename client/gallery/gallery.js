@@ -327,7 +327,7 @@
 
         let force_rerender = $interval(() => {
           this.render();
-        }, 2000);
+        }, 1000);
 
         let scaling = false;
 
@@ -1051,13 +1051,13 @@
           }
           else if(old_src.split('/media/mocks/')[1] !== new_src.split('/media/mocks/')[1]) {
 
-            let image = this.image.image();
+            let img = new Image();
 
-            image.src = new_src;
+            img.src = new_src;
 
-            image.onerror = () => {
+            img.onload = () => {
 
-              image.src = old_src;
+              this.image.image(img);
 
             };
 
